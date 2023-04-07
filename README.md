@@ -12,7 +12,6 @@
 - [Citing](#citing)
 
 ## Sponsors
-
 Thanks to the following for hardware support:
 * TPU Research Cloud (TRC) (https://sites.research.google/trc/about/)
 * Nvidia (https://www.nvidia.com/en-us/)
