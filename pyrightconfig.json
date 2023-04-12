@@ -1,0 +1,24 @@
+{
+  "reportUnknownModuleExports": false,
+  "reportUnboundVariable": false,
+  "reportMissingImports": false,
+  "reportMissingTypeStubs": false,
+  "reportMissingModuleSource": false,
+  "include": [],
+  "exclude": [
+    "**/node_modules",
+    "**/__pycache__",
+    "/home/malashin/.local/lib/python3.10/site-packages/torch/*.py"
+  ],
+  "ignore": [
+    "torch",
+    "/home/malashin/.local/lib/python3.10/site-packages/torch/*.py"
+  ],
+  "defineConstant": {
+    "DEBUG": true
+  },
+  "stubPath": "src/stubs",
+  "venv": "env367",
+  "pythonVersion": "3.10",
+  "pythonPlatform": "Linux",
+}
