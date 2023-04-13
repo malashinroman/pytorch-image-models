@@ -1,9 +1,10 @@
+
+import sys
 sys.path.append(".")
 from local_config import IMAGENET_PATH
 from script_manager.func.script_parse_args import get_script_args
 from script_manager.func.script_boilerplate import do_everything
 import os
-import sys
 
 args = get_script_args()
 
@@ -17,6 +18,7 @@ extra_folder_keys = []
 # --aa rand-m9-mstd0.5-inc1 --amp --aug-splits 3 --dist-bn reduce --epochs 200 --jsd --lr 0.05 --model resnet50 --remode pixel --reprob 0.6 --resplit --sched cosine --split-bn
 
 default_parameters = {
+    "__script_output_arg__": "output",
     "aa": "rand-m9-mstd0.5-inc1",
     "amp": "parameter_without_value",
     "aug-splits": 3,
