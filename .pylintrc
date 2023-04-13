@@ -1,0 +1,12 @@
+[pycodestyle]
+max-line-length = 120
+ignore = E501
+[pylint.messages control]
+disable = C0103
+
+[MASTER]
+disable=missing-module-docstring,missing-class-docstring,missing-function-docstring
+init-hook='import sys; sys.path.append("/home/malashin/projects/pytorch-image-models/")'
+
+[TYPECHECK]
+ignored-modules=torch

@@ -1,8 +1,9 @@
+train_results/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
-
 # C extensions
 *.so
 
@@ -115,7 +116,10 @@ Testing notebook.ipynb
 /*.csv
 /*.yaml
 /*.json
+!pyrightconfig.json
 /*.jpg
 /*.png
 /*.zip
 /*.tar.*
+local_config.py
+wandb

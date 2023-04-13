@@ -9,6 +9,7 @@ markers = [
 ]
 
 [tool.black]
+ignore = E203,W503
 line-length = 120
 target-version = ['py37', 'py38', 'py39', 'py310', 'py311']
 skip-string-normalization = true
