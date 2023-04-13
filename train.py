@@ -22,7 +22,6 @@ from collections import OrderedDict
 from contextlib import suppress
 from datetime import datetime
 from functools import partial
-import local_config
 
 import torch
 import torch.nn as nn
@@ -30,7 +29,8 @@ import torchvision.utils
 import yaml
 from torch.nn.parallel import DistributedDataParallel as NativeDDP
 from script_manager.func.add_needed_args import smart_parse_args
-
+from script_manager.func.wandb_logger import write_wandb_scalar, write_wandb_bar, write_wandb_dict
+# from script_manager.func.wandb_logger import
 from timm import utils
 from timm.data import create_dataset, create_loader, resolve_data_config, Mixup, FastCollateMixup, AugMixDataset
 from timm.layers import convert_splitbn_model, convert_sync_batchnorm, set_fast_norm
@@ -371,15 +371,15 @@ def _parse_args():
     # args = parser.parse_args(remaining)
 
     # Cache the args as a text string to save them in the output dir later
-    args_text = yaml.safe_dump(args.__dict__, default_flow_style=False)
-    return args, args_text
+    # args_text = yaml.safe_dump(args.__dict__, default_flow_style=False)
+
+    return args
 
 
 def main():
 
-    __import__('pudb').set_trace()
     utils.setup_default_logging()
-    args, args_text = _parse_args()
+    args = _parse_args()
 
     if torch.cuda.is_available():
         torch.backends.cuda.matmul.allow_tf32 = True
@@ -443,7 +443,7 @@ def main():
         assert hasattr(
             model, 'num_classes'), 'Model must have `num_classes` attr if not set on cmd line/config.'
         # FIXME handle model default vs config num_classes more elegantly
-        args.num_classes = model.num_classes
+        # args.num_classes = model.num_classes
 
     if args.grad_checkpointing:
         model.set_grad_checkpointing(enable=True)
@@ -741,8 +741,8 @@ def main():
             decreasing=decreasing,
             max_history=args.checkpoint_hist
         )
-        with open(os.path.join(output_dir, 'args.yaml'), 'w') as f:
-            f.write(args_text)
+        # with open(os.path.join(output_dir, 'args.yaml'), 'w') as f:
+        #     f.write(args_text)
 
     if utils.is_primary(args) and args.log_wandb:
         if has_wandb:
@@ -811,7 +811,13 @@ def main():
                 validate_loss_fn,
                 args,
                 amp_autocast=amp_autocast,
+                dumpwandb=True
             )
+
+            #     'val_loss': losses_m.avg,
+            #     'val_top1': top1_m.avg,
+            #     'val_top5': top5_m.avg,
+            # })
 
             if model_ema is not None and not args.model_ema_force_cpu:
                 if args.distributed and args.dist_bn in ('broadcast', 'reduce'):
@@ -990,6 +996,8 @@ def train_one_epoch(
     if hasattr(optimizer, 'sync_lookahead'):
         optimizer.sync_lookahead()
 
+    write_wandb_scalar({'train_loss': losses_m.avg}, commit=False)
+
     return OrderedDict([('loss', losses_m.avg)])
 
 
@@ -1000,7 +1008,8 @@ def validate(
         args,
         device=torch.device('cuda'),
         amp_autocast=suppress,
-        log_suffix=''
+        log_suffix='',
+        dumpwandb=False
 ):
     batch_time_m = utils.AverageMeter()
     losses_m = utils.AverageMeter()
@@ -1068,6 +1077,12 @@ def validate(
 
     metrics = OrderedDict(
         [('loss', losses_m.avg), ('top1', top1_m.avg), ('top5', top5_m.avg)])
+
+    if dumpwandb:
+        write_wandb_scalar({'loss': losses_m.avg,
+                            'top1': top1_m.avg,
+                            'top5': top5_m.avg,
+                            })
 
     return metrics
 

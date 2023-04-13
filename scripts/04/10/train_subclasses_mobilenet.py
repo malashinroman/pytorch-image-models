@@ -3,14 +3,14 @@ train series of mobilenets on 100 subclasses of imagenet
 """
 
 import os
+import random
 import sys
-
 sys.path.append(".")
-from local_config import IMAGENET_PATH
 from script_manager.func.script_boilerplate import do_everything
+from local_config import IMAGENET_PATH
 
 # weights and biases project name
-WANDB_PROJECT_NAME = "lac_ppo"
+WANDB_PROJECT_NAME = "python-image-models"
 base_tag = os.path.split(__file__)[-1].split('.')[0]
 # keys
 appendix_keys = ["tag"]
@@ -19,28 +19,29 @@ extra_folder_keys = []
 # same parameters that are
 # used for 1000 classes
 default_parameters = {
-        "model": "mobilenetv3_large_100",
-        "batch-size": 512,
-        "sched": "step",
-        "epochs": 600,
-        "decay-epochs": 2.4,
-        "workers": 7,
-        "decay-rate": 0.973,
-        "opt": "rmsproptf",
-        "opt-eps": 0.001,
-        "warmup-lr": 1e-6,
-        "weight-decay": 1e-5,
-        "drop": 0.2,
-        "drop-path": 0.2,
-        "model-ema":  "parameter_without_value",
-        "model-ema-decay": 0.9999,
-        "aa": "rand-m9-mstd0.5",
-        "remode": "pixel",
-        "reprob": 0.2,
-        "amp": "parameter_wiimport pylint.config; print(pylint.config.find_pylintrc())thout_value",
-        "lr": 0.064,
-        "lr-noise": "0.42 0.9",
-        "data-dir": os.path.join(IMAGENET_PATH, 'pytorch_models_structure'),
+    "__script_output_arg__": "output",
+    "model": "mobilenetv3_large_100",
+    "batch-size": 512,
+    "sched": "step",
+    "epochs": 600,
+    "decay-epochs": 2.4,
+    "workers": 7,
+    "decay-rate": 0.973,
+    "opt": "rmsproptf",
+    "opt-eps": 0.001,
+    "warmup-lr": 1e-6,
+    "weight-decay": 1e-5,
+    "drop": 0.2,
+    "drop-path": 0.2,
+    "model-ema":  "parameter_without_value",
+    "model-ema-decay": 0.9999,
+    "aa": "rand-m9-mstd0.5",
+    "remode": "pixel",
+    "reprob": 0.2,
+    "amp": "parameter_without_value",
+    "lr": 0.064,
+    "lr-noise": "0.42 0.9",
+    "data-dir": os.path.join(IMAGENET_PATH, 'pytorch_models_structure'),
 }
 
 configs = []
@@ -49,8 +50,11 @@ test_parameters = {
 
 }
 
-MAIN_SCRIPT = "torchrun --nproc_per_node=1 train.py"
-
+# "    --rdzv_backend=c10d" \
+# "    --rdzv_endpoint=localhost:{random.randint(0,1000)}" \
+# "   train.py"
+MAIN_SCRIPT = f"torchrun --rdzv_backend=c10d --rdzv_endpoint=localhost:{random.randint(0,1000)} --nproc_per_node=2 train.py"
+# __import__('pudb').set_trace()
 for i in range(0, 10):
     config = {
         "tag": f"{base_tag}_class_map{i}",
