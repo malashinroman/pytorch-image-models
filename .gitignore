@@ -123,3 +123,4 @@ Testing notebook.ipynb
 /*.tar.*
 local_config.py
 wandb
+checkpoints
