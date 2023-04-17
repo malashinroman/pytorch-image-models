@@ -21,4 +21,7 @@
   "venv": "env367",
   "pythonVersion": "3.10",
   "pythonPlatform": "Linux",
+  "pythonInterpreterPath": "/opt/conda/bin/python",
+  "typeCheckingMode": "off",
+  "strictListInference": false
 }

@@ -14,31 +14,33 @@ NVIDIA CUDA specific speedups adopted from NVIDIA Apex examples
 
 Hacked together by / Copyright 2020 Ross Wightman (https://github.com/rwightman)
 """
+from timm.utils import ApexScaler, NativeScaler
+from timm.scheduler import create_scheduler_v2, scheduler_kwargs
+from timm.optim import create_optimizer_v2, optimizer_kwargs
+from timm.models import create_model, safe_model_name, resume_checkpoint, load_checkpoint, model_parameters
+from timm.loss import JsdCrossEntropy, SoftTargetCrossEntropy, BinaryCrossEntropy, LabelSmoothingCrossEntropy
+from timm.layers import convert_splitbn_model, convert_sync_batchnorm, set_fast_norm
+from timm.data import create_dataset, create_loader, resolve_data_config, Mixup, FastCollateMixup, AugMixDataset
+from timm import utils
+from script_manager.func.wandb_logger import write_wandb_scalar, write_wandb_bar, write_wandb_dict
+from script_manager.func.add_needed_args import smart_parse_args
+from torch.nn.parallel import DistributedDataParallel as NativeDDP
+import yaml
+import torchvision.utils
+import torch.nn as nn
+import torch
+from functools import partial
+from datetime import datetime
+from contextlib import suppress
+from collections import OrderedDict
+from dycs.utils import create_model_dycs
 import argparse
 import logging
 import os
 import time
-from collections import OrderedDict
-from contextlib import suppress
-from datetime import datetime
-from functools import partial
+import sys
 
-import torch
-import torch.nn as nn
-import torchvision.utils
-import yaml
-from torch.nn.parallel import DistributedDataParallel as NativeDDP
-from script_manager.func.add_needed_args import smart_parse_args
-from script_manager.func.wandb_logger import write_wandb_scalar, write_wandb_bar, write_wandb_dict
 # from script_manager.func.wandb_logger import
-from timm import utils
-from timm.data import create_dataset, create_loader, resolve_data_config, Mixup, FastCollateMixup, AugMixDataset
-from timm.layers import convert_splitbn_model, convert_sync_batchnorm, set_fast_norm
-from timm.loss import JsdCrossEntropy, SoftTargetCrossEntropy, BinaryCrossEntropy, LabelSmoothingCrossEntropy
-from timm.models import create_model, safe_model_name, resume_checkpoint, load_checkpoint, model_parameters
-from timm.optim import create_optimizer_v2, optimizer_kwargs
-from timm.scheduler import create_scheduler_v2, scheduler_kwargs
-from timm.utils import ApexScaler, NativeScaler
 
 try:
     from apex import amp
@@ -377,7 +379,6 @@ def _parse_args():
 
 
 def main():
-
     utils.setup_default_logging()
     args = _parse_args()
 
@@ -424,7 +425,7 @@ def main():
     elif args.input_size is not None:
         in_chans = args.input_size[0]
 
-    model = create_model(
+    model = create_model_dycs(
         args.model,
         pretrained=args.pretrained,
         in_chans=in_chans,
@@ -439,6 +440,22 @@ def main():
         checkpoint_path=args.initial_checkpoint,
         **args.model_kwargs,
     )
+
+    # model = create_model(
+    #     args.model,
+    #     pretrained=args.pretrained,
+    #     in_chans=in_chans,
+    #     num_classes=args.num_classes,
+    #     drop_rate=args.drop,
+    #     drop_path_rate=args.drop_path,
+    #     drop_block_rate=args.drop_block,
+    #     global_pool=args.gp,
+    #     bn_momentum=args.bn_momentum,
+    #     bn_eps=args.bn_eps,
+    #     scriptable=args.torchscript,
+    #     checkpoint_path=args.initial_checkpoint,
+    #     **args.model_kwargs,
+    # )
     if args.num_classes is None:
         assert hasattr(
             model, 'num_classes'), 'Model must have `num_classes` attr if not set on cmd line/config.'

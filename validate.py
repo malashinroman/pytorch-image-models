@@ -7,6 +7,7 @@ canonical PyTorch, standard Python style, and good performance. Repurpose as you
 
 Hacked together by Ross Wightman (https://github.com/rwightman)
 """
+from script_manager.func.add_needed_args import smart_parse_args
 import argparse
 import csv
 import glob
@@ -27,6 +28,10 @@ from timm.layers import apply_test_time_pool, set_fast_norm
 from timm.models import create_model, load_checkpoint, is_model, list_models
 from timm.utils import accuracy, AverageMeter, natural_key, setup_default_logging, set_jit_fuser, \
     decay_batch_step, check_batch_size_retry, ParseKwargs
+
+from dycs.utils import create_model_dycs
+import sys
+sys.path.append(".")
 
 try:
     from apex import amp
@@ -125,8 +130,12 @@ parser.add_argument('--fuser', default='', type=str,
                     help="Select jit fuser. One of ('', 'te', 'old', 'nvfuser')")
 parser.add_argument('--fast-norm', default=False, action='store_true',
                     help='enable experimental fast-norm')
-parser.add_argument('--model-kwargs', nargs='*', default={}, action=ParseKwargs)
+parser.add_argument('--model-kwargs', nargs='*',
+                    default={}, action=ParseKwargs)
 
+
+parser.add_argument('--output', default=None, type=str,
+                    help='additional parameter from script manager')
 
 scripting_group = parser.add_mutually_exclusive_group()
 scripting_group.add_argument('--torchscript', default=False, action='store_true',
@@ -173,8 +182,10 @@ def validate(args):
             assert args.amp_dtype in ('float16', 'bfloat16')
             use_amp = 'native'
             amp_dtype = torch.bfloat16 if args.amp_dtype == 'bfloat16' else torch.float16
-            amp_autocast = partial(torch.autocast, device_type=device.type, dtype=amp_dtype)
-            _logger.info('Validating in mixed precision with native PyTorch AMP.')
+            amp_autocast = partial(
+                torch.autocast, device_type=device.type, dtype=amp_dtype)
+            _logger.info(
+                'Validating in mixed precision with native PyTorch AMP.')
     else:
         _logger.info('Validating in float32. AMP not enabled.')
 
@@ -191,24 +202,37 @@ def validate(args):
     elif args.input_size is not None:
         in_chans = args.input_size[0]
 
-    model = create_model(
+    # model = create_model(
+    #     args.model,
+    #     pretrained=args.pretrained,
+    #     num_classes=args.num_classes,
+    #     in_chans=in_chans,
+    #     global_pool=args.gp,
+    #     scriptable=args.torchscript,
+    #     **args.model_kwargs,
+    # )
+
+    model = create_model_dycs(
         args.model,
         pretrained=args.pretrained,
         num_classes=args.num_classes,
         in_chans=in_chans,
         global_pool=args.gp,
         scriptable=args.torchscript,
+        checkpoint_path=args.checkpoint,
         **args.model_kwargs,
     )
     if args.num_classes is None:
-        assert hasattr(model, 'num_classes'), 'Model must have `num_classes` attr if not set on cmd line/config.'
+        assert hasattr(
+            model, 'num_classes'), 'Model must have `num_classes` attr if not set on cmd line/config.'
         args.num_classes = model.num_classes
 
-    if args.checkpoint:
+    if args.checkpoint and not args.checkpoint.endswith('/'):
         load_checkpoint(model, args.checkpoint, args.use_ema)
 
     param_count = sum([m.numel() for m in model.parameters()])
-    _logger.info('Model %s created, param count: %d' % (args.model, param_count))
+    _logger.info('Model %s created, param count: %d' %
+                 (args.model, param_count))
 
     data_config = resolve_data_config(
         vars(args),
@@ -239,7 +263,8 @@ def validate(args):
         model = amp.initialize(model, opt_level='O1')
 
     if args.num_gpu > 1:
-        model = torch.nn.DataParallel(model, device_ids=list(range(args.num_gpu)))
+        model = torch.nn.DataParallel(
+            model, device_ids=list(range(args.num_gpu)))
 
     criterion = nn.CrossEntropyLoss().to(device)
 
@@ -260,7 +285,8 @@ def validate(args):
         valid_labels = None
 
     if args.real_labels:
-        real_labels = RealLabelsImagenet(dataset.filenames(basename=True), real_json=args.real_labels)
+        real_labels = RealLabelsImagenet(dataset.filenames(
+            basename=True), real_json=args.real_labels)
     else:
         real_labels = None
 
@@ -289,7 +315,8 @@ def validate(args):
     model.eval()
     with torch.no_grad():
         # warmup, reduce variability of first batch time, especially for comparing torchscript vs non
-        input = torch.randn((args.batch_size,) + tuple(data_config['input_size'])).to(device)
+        input = torch.randn((args.batch_size,) +
+                            tuple(data_config['input_size'])).to(device)
         if args.channels_last:
             input = input.contiguous(memory_format=torch.channels_last)
         with amp_autocast():
@@ -309,7 +336,8 @@ def validate(args):
 
                 if valid_labels is not None:
                     output = output[:, valid_labels]
-                loss = criterion(output, target)
+                loss = criterion(
+                    output, target)  # pylint: disable=not-callable
 
             if real_labels is not None:
                 real_labels.add_result(output)
@@ -343,7 +371,8 @@ def validate(args):
 
     if real_labels is not None:
         # real labels mode replaces topk values at the end
-        top1a, top5a = real_labels.get_accuracy(k=1), real_labels.get_accuracy(k=5)
+        top1a, top5a = real_labels.get_accuracy(
+            k=1), real_labels.get_accuracy(k=5)
     else:
         top1a, top5a = top1.avg, top5.avg
     results = OrderedDict(
@@ -357,7 +386,7 @@ def validate(args):
     )
 
     _logger.info(' * Acc@1 {:.3f} ({:.3f}) Acc@5 {:.3f} ({:.3f})'.format(
-       results['top1'], results['top1_err'], results['top5'], results['top5_err']))
+        results['top1'], results['top1_err'], results['top5'], results['top5_err']))
 
     return results
 
@@ -367,7 +396,8 @@ def _try_run(args, initial_batch_size):
     results = OrderedDict()
     error_str = 'Unknown'
     while batch_size:
-        args.batch_size = batch_size * args.num_gpu  # multiply by num-gpu for DataParallel case
+        # multiply by num-gpu for DataParallel case
+        args.batch_size = batch_size * args.num_gpu
         try:
             if torch.cuda.is_available() and 'cuda' in args.device:
                 torch.cuda.empty_cache()
@@ -385,12 +415,15 @@ def _try_run(args, initial_batch_size):
     return results
 
 
-_NON_IN1K_FILTERS = ['*_in21k', '*_in22k', '*in12k', '*_dino', '*fcmae', '*seer']
+_NON_IN1K_FILTERS = ['*_in21k', '*_in22k',
+                     '*in12k', '*_dino', '*fcmae', '*seer']
 
 
 def main():
     setup_default_logging()
-    args = parser.parse_args()
+    # args = parser.parse_args()
+    args = smart_parse_args(parser)
+
     model_cfgs = []
     model_names = []
     if os.path.isdir(args.checkpoint):
@@ -398,7 +431,8 @@ def main():
         checkpoints = glob.glob(args.checkpoint + '/*.pth.tar')
         checkpoints += glob.glob(args.checkpoint + '/*.pth')
         model_names = list_models(args.model)
-        model_cfgs = [(args.model, c) for c in sorted(checkpoints, key=natural_key)]
+        model_cfgs = [(args.model, c)
+                      for c in sorted(checkpoints, key=natural_key)]
     else:
         if args.model == 'all':
             # validate all models in a list of names with pretrained checkpoints
@@ -422,7 +456,8 @@ def main():
             model_cfgs = [(n, None) for n in model_names if n]
 
     if len(model_cfgs):
-        _logger.info('Running bulk validation on these pretrained models: {}'.format(', '.join(model_names)))
+        _logger.info('Running bulk validation on these pretrained models: {}'.format(
+            ', '.join(model_names)))
         results = []
         try:
             initial_batch_size = args.batch_size
@@ -465,7 +500,6 @@ def write_results(results_file, results, format='csv'):
             for r in results:
                 dw.writerow(r)
             cf.flush()
-
 
 
 if __name__ == '__main__':
