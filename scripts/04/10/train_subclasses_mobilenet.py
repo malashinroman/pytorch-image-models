@@ -54,7 +54,6 @@ test_parameters = {
 # "    --rdzv_endpoint=localhost:{random.randint(0,1000)}" \
 # "   train.py"
 MAIN_SCRIPT = f"torchrun --rdzv_backend=c10d --rdzv_endpoint=localhost:{random.randint(0,1000)} --nproc_per_node=2 train.py"
-# __import__('pudb').set_trace()
 for i in range(0, 10):
     config = {
         "tag": f"{base_tag}_class_map{i}",
