@@ -58,7 +58,7 @@ MAIN_SCRIPT = f"torchrun --rdzv_backend=c10d --rdzv_endpoint=localhost:{random.r
 LR = 1e-4
 config = {
     "tag": f"{base_tag}_{LR}_",
-    "initial-checkpoint": 'checkpoints/10_networks_pretrained/',
+    "initial-checkpoint": 'checkpoints/10_networks/',
     "lr": LR
 }
 configs.append([config, None])
