@@ -792,6 +792,14 @@ def main():
         _logger.info(
             f'Scheduled epochs: {num_epochs}. LR stepped per {"epoch" if lr_scheduler.t_in_epochs else "update"}.')
 
+    eval_metrics = validate(
+        model,
+        loader_eval,
+        validate_loss_fn,
+        args,
+        amp_autocast=amp_autocast,
+        dumpwandb=True
+    )
     try:
         for epoch in range(start_epoch, num_epochs):
             if hasattr(dataset_train, 'set_epoch'):
