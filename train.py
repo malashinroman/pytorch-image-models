@@ -441,27 +441,6 @@ def main():
         **args.model_kwargs,
     )
 
-    # model = create_model(
-    #     args.model,
-    #     pretrained=args.pretrained,
-    #     in_chans=in_chans,
-    #     num_classes=args.num_classes,
-    #     drop_rate=args.drop,
-    #     drop_path_rate=args.drop_path,
-    #     drop_block_rate=args.drop_block,
-    #     global_pool=args.gp,
-    #     bn_momentum=args.bn_momentum,
-    #     bn_eps=args.bn_eps,
-    #     scriptable=args.torchscript,
-    #     checkpoint_path=args.initial_checkpoint,
-    #     **args.model_kwargs,
-    # )
-    if args.num_classes is None:
-        assert hasattr(
-            model, 'num_classes'), 'Model must have `num_classes` attr if not set on cmd line/config.'
-        # FIXME handle model default vs config num_classes more elegantly
-        # args.num_classes = model.num_classes
-
     if args.grad_checkpointing:
         model.set_grad_checkpointing(enable=True)
 
@@ -792,6 +771,7 @@ def main():
         _logger.info(
             f'Scheduled epochs: {num_epochs}. LR stepped per {"epoch" if lr_scheduler.t_in_epochs else "update"}.')
 
+    # validate initial model
     eval_metrics = validate(
         model,
         loader_eval,
@@ -842,7 +822,6 @@ def main():
             #     'val_loss': losses_m.avg,
             #     'val_top1': top1_m.avg,
             #     'val_top5': top5_m.avg,
-            # })
 
             if model_ema is not None and not args.model_ema_force_cpu:
                 if args.distributed and args.dist_bn in ('broadcast', 'reduce'):
@@ -1022,6 +1001,7 @@ def train_one_epoch(
         optimizer.sync_lookahead()
 
     write_wandb_scalar({'train_loss': losses_m.avg}, commit=False)
+    write_wandb_scalar({'lr': lr}, commit=False)
 
     return OrderedDict([('loss', losses_m.avg)])
 
