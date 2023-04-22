@@ -8,6 +8,7 @@ from timm.models._pretrained import PretrainedCfg
 from timm.models._factory import create_model
 import torch
 import os
+from dycs.models.Dycs import DycsNet
 
 def get_net_files(checkpoint_path):
     # FIXME: fix for arbitrary number of subdirectories
@@ -16,33 +17,8 @@ def get_net_files(checkpoint_path):
     return glob.glob(os.path.join(checkpoint_path, '*/*/*model_best*'), recursive=True)
 
 
-class DycsNet(torch.nn.Module):
-    """ modular net for dycs
-    """
-    def __init__(self, nets):
-        super().__init__()
-        self.nets = torch.nn.ModuleList(nets)
-        self.num_classes = 1000
-        for i in range(len(nets)):
-            self.nets[i] = self.nets[i].cuda()
-            # self.nets[i] = self.nets[i].to('cuda:0')
-
-    def forward(self, x):
-        # forward pass through all networks
-        ys = []
-        # x = x.to('cuda:0')
-        for net in self.nets:
-            y = net(x)
-            ys.append(y)
-
-        # concatenate all outputs
-        # take only 100 first elements of output vector for each networks
-        ys = [y[:, :100] for y in ys]
-        y = torch.cat(ys, dim=1)
-        return y
-
-
 def create_model_dycs(
+    args: Any,
     model_name: str,
     pretrained: bool = False,
     pretrained_cfg: Optional[Union[str,
@@ -63,7 +39,14 @@ def create_model_dycs(
                             checkpoint_path, scriptable, exportable,
                             no_jit, **kwargs)
 
-    timm_model_name = model_name.replace('dycs_', '')
+    name_parts = model_name.split('dycs_')
+    if len(name_parts) == 2:
+        timm_model_name = name_parts[1]
+        dycs_model_name = name_parts[0][:-1]
+    else:
+        raise ValueError('Invalid model name')
+
+    # timm_model_name = model_name.replace('dycs_', '')
     pretrained = False
     network_files = get_net_files(checkpoint_path)
     if len(network_files) == 0:

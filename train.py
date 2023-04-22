@@ -140,7 +140,8 @@ group.add_argument('-vb', '--validation-batch-size', type=int, default=None, met
 group.add_argument('--channels-last', action='store_true', default=False,
                    help='Use channels_last memory layout')
 group.add_argument('--fuser', default='', type=str,
-                   help="Select jit fuser. One of ('', 'te', 'old', 'nvfuser')")
+                   help="Select jit fuser. One of ('', 'te', 'old', 'nvfuser')") # NB: unknown parameter
+
 group.add_argument('--grad-checkpointing', action='store_true', default=False,
                    help='Enable gradient checkpointing through model blocks/stages')
 group.add_argument('--fast-norm', default=False, action='store_true',
@@ -216,7 +217,7 @@ group.add_argument('--epoch-repeats', type=float, default=0., metavar='N',
 group.add_argument('--start-epoch', default=None, type=int, metavar='N',
                    help='manual epoch number (useful on restarts)')
 group.add_argument('--decay-milestones', default=[90, 180, 270], type=int, nargs='+', metavar="MILESTONES",
-                   help='list of decay epoch indices for multistep lr. must be increasing')
+                   help='list of decay epoch indices for multistep lr. must be increasing') #NB: is it used properly?
 group.add_argument('--decay-epochs', type=float, default=90, metavar='N',
                    help='epoch interval to decay LR')
 group.add_argument('--warmup-epochs', type=int, default=5, metavar='N',
@@ -426,6 +427,7 @@ def main():
         in_chans = args.input_size[0]
 
     model = create_model_dycs(
+        args,
         args.model,
         pretrained=args.pretrained,
         in_chans=in_chans,

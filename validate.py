@@ -213,6 +213,7 @@ def validate(args):
     # )
 
     model = create_model_dycs(
+        args,
         args.model,
         pretrained=args.pretrained,
         num_classes=args.num_classes,
