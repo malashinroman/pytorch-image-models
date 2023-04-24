@@ -60,7 +60,7 @@ for model in ['resnet18']:
             config = {
                 "model": model,
                 "no-aug": "parameter_without_value",
-                "ranfom_invet_p": inv_p,
+                "random_invet_p": inv_p,
                 "tag": f"{base_tag}_{model}_inv_p_{inv_p}_sharp_{adjust_shapness}",
             }
             configs.append([config, None])

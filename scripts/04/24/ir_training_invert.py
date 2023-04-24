@@ -2,12 +2,12 @@
 train series of mobilenets on 100 subclasses of imagenet
 """
 
+from local_config import IMAGENET_PATH, IR_VIS_DATASET_PATH
+from script_manager.func.script_boilerplate import do_everything
 import os
 import random
 import sys
 sys.path.append(".")
-from script_manager.func.script_boilerplate import do_everything
-from local_config import IMAGENET_PATH, IR_VIS_DATASET_PATH
 
 # weights and biases project name
 WANDB_PROJECT_NAME = "python-image-models"
@@ -55,12 +55,13 @@ test_parameters = {
 
 MAIN_SCRIPT = f"torchrun --rdzv_backend=c10d --rdzv_endpoint=localhost:{random.randint(0,1000)} --nproc_per_node=1 train.py"
 for model in ['resnet18']:
-    for inv_p in [0.5, 0.3, 0.7]:
-        for adjust_shapness in [10, 0, 5]:
+    for inv_p in [0.5, 0.7, 0.9]:
+        for adjust_sharpness in [10, 0, 5]:
             config = {
                 "model": model,
-                "ranfom_invet_p": inv_p,
-                "tag": f"{base_tag}_{model}_inv_p_{inv_p}_sharp_{adjust_shapness}",
+                "random_invet_p": inv_p,
+                "adjust_sharpness": adjust_sharpness,
+                "tag": f"{base_tag}_{model}_inv_p_{inv_p}_sharp_{adjust_sharpness}",
             }
             configs.append([config, None])
 
@@ -76,4 +77,5 @@ if __name__ == "__main__":
         test_parameters=test_parameters,
         wandb_project_name=WANDB_PROJECT_NAME,
         script_file=__file__,
+    )
     )

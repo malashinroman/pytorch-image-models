@@ -115,11 +115,10 @@ def transforms_imagenet_train(
         secondary_tfl += [transforms.ColorJitter(*color_jitter)]
 
     ir_tfl = []
-    __import__('pudb').set_trace()
     if args is not None and args.random_invert_p > 0.:
         ir_tfl += [transforms.RandomInvert(p=args.random_invert_p)]
-    if args is not None and args.adjust_shapness > 0.:
-        ir_tfl += [transforms.RandomAdjustSharpness(args.adjust_shapness, p=1.)]
+    if args is not None and args.adjust_sharpness > 0.:
+        ir_tfl += [transforms.RandomAdjustSharpness(args.adjust_sharpness, p=1.)]
     final_tfl = []
     if use_prefetcher:
         # prefetcher and collate will handle tensor conversion and norm
