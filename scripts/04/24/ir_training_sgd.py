@@ -7,7 +7,7 @@ import random
 import sys
 sys.path.append(".")
 from script_manager.func.script_boilerplate import do_everything
-from local_config import IMAGENET_PATH, IR_VIS_DATASET_PATH
+from local_config import IR_VIS_DATASET_PATH2 as IR_VIS_DATASET_PATH
 
 # weights and biases project name
 WANDB_PROJECT_NAME = "python-image-models"
