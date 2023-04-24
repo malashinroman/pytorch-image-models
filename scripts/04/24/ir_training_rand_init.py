@@ -7,7 +7,7 @@ import random
 import sys
 sys.path.append(".")
 from script_manager.func.script_boilerplate import do_everything
-from local_config import IMAGENET_PATH, IR_VIS_DATASET_PATH
+from local_config import IR_VIS_DATASET_PATH2 as IR_VIS_DATASET_PATH
 
 # weights and biases project name
 WANDB_PROJECT_NAME = "python-image-models"
@@ -22,7 +22,7 @@ default_parameters = {
     "aa": "rand-m9-mstd0.5",
     "amp": "parameter_without_value",
     "batch-size": 64, #-b 512 
-    "data-dir": os.path.join(IMAGENET_PATH, 'pytorch_models_structure'),
+    "data-dir": os.path.join(IR_VIS_DATASET_PATH, 'pytorch_models_structure'),
     "decay-epochs": 2.4,
     "decay-rate": 0.973,
     "drop": 0.2,
