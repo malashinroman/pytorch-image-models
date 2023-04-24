@@ -58,6 +58,11 @@ _logger = logging.getLogger('validate')
 
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Validation')
+# dycs parameters
+parser.add_argument('--dycs_meaning_neurons', default='first', 
+                   type=str, help='position of meaining neurons [first, inplace]')
+parser.add_argument('--dycs_classes_per_group', default=100,
+                    type=int, help='number of classes per group')
 parser.add_argument('data', nargs='?', metavar='DIR', const=None,
                     help='path to dataset (*deprecated*, use --data-dir)')
 parser.add_argument('--data-dir', metavar='DIR',

@@ -81,9 +81,16 @@ config_parser = parser = argparse.ArgumentParser(
 parser.add_argument('-c', '--config', default='', type=str, metavar='FILE',
                     help='YAML config file specifying default arguments')
 
-
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
 
+
+group = parser.add_argument_group('Dycs parameters')
+
+# dycs parameters
+group.add_argument('--dycs_meaning_neurons', default='first',
+                   type=str, help='position of meaining neurons [first, inplace]')
+group.add_argument('--dycs_classes_per_group', default=100,
+                   type=int, help='number of classes per group')
 # Dataset parameters
 group = parser.add_argument_group('Dataset parameters')
 # Keep this argument outside the dataset group because it is positional.
@@ -97,6 +104,8 @@ group.add_argument('--train-split', metavar='NAME', default='train',
                    help='dataset train split (default: train)')
 group.add_argument('--val-split', metavar='NAME', default='validation',
                    help='dataset validation split (default: validation)')
+group.add_argument('--test-split', metavar='NAME', default=None,
+                   help='dataset test split (default: None)')
 group.add_argument('--dataset-download', action='store_true', default=False,
                    help='Allow download of dataset for torch/ and tfds/ datasets that support it.')
 group.add_argument('--class-map', default='', type=str, metavar='FILENAME',
@@ -140,7 +149,7 @@ group.add_argument('-vb', '--validation-batch-size', type=int, default=None, met
 group.add_argument('--channels-last', action='store_true', default=False,
                    help='Use channels_last memory layout')
 group.add_argument('--fuser', default='', type=str,
-                   help="Select jit fuser. One of ('', 'te', 'old', 'nvfuser')") # NB: unknown parameter
+                   help="Select jit fuser. One of ('', 'te', 'old', 'nvfuser')")  # NB: unknown parameter
 
 group.add_argument('--grad-checkpointing', action='store_true', default=False,
                    help='Enable gradient checkpointing through model blocks/stages')
@@ -217,7 +226,7 @@ group.add_argument('--epoch-repeats', type=float, default=0., metavar='N',
 group.add_argument('--start-epoch', default=None, type=int, metavar='N',
                    help='manual epoch number (useful on restarts)')
 group.add_argument('--decay-milestones', default=[90, 180, 270], type=int, nargs='+', metavar="MILESTONES",
-                   help='list of decay epoch indices for multistep lr. must be increasing') #NB: is it used properly?
+                   help='list of decay epoch indices for multistep lr. must be increasing')  # NB: is it used properly?
 group.add_argument('--decay-epochs', type=float, default=90, metavar='N',
                    help='epoch interval to decay LR')
 group.add_argument('--warmup-epochs', type=int, default=5, metavar='N',
@@ -604,6 +613,18 @@ def main():
         batch_size=args.batch_size,
     )
 
+    dataset_test = None
+    if args.test_split is not None:
+        dataset_test = create_dataset(
+            args.dataset,
+            root=args.data_dir,
+            split=args.test_split,
+            is_training=False,
+            class_map=args.class_map,
+            download=args.dataset_download,
+            batch_size=args.batch_size,
+        )
+
     # setup mixup / cutmix
     collate_fn = None
     mixup_fn = None
@@ -684,6 +705,22 @@ def main():
         pin_memory=args.pin_mem,
         device=device,
     )
+    if dataset_test is not None:
+        loader_test = create_loader(
+            dataset_test,
+            input_size=data_config['input_size'],
+            batch_size=args.validation_batch_size or args.batch_size,
+            is_training=False,
+            use_prefetcher=args.prefetcher,
+            interpolation=data_config['interpolation'],
+            mean=data_config['mean'],
+            std=data_config['std'],
+            num_workers=eval_workers,
+            distributed=args.distributed,
+            crop_pct=data_config['crop_pct'],
+            pin_memory=args.pin_mem,
+            device=device,
+        )
 
     # setup loss function
     if args.jsd_loss:
@@ -706,6 +743,7 @@ def main():
                 smoothing=args.smoothing)
     else:
         train_loss_fn = nn.CrossEntropyLoss()
+
     train_loss_fn = train_loss_fn.to(device=device)
     validate_loss_fn = nn.CrossEntropyLoss().to(device=device)
 
@@ -774,6 +812,17 @@ def main():
             f'Scheduled epochs: {num_epochs}. LR stepped per {"epoch" if lr_scheduler.t_in_epochs else "update"}.')
 
     # validate initial model
+    if dataset_test is not None:
+        _ = validate(
+            model,
+            loader_test,
+            validate_loss_fn,
+            args,
+            amp_autocast=amp_autocast,
+            dumpwandb=False,
+            dumptag='IR'
+        )
+
     eval_metrics = validate(
         model,
         loader_eval,
@@ -811,6 +860,17 @@ def main():
                         "Distributing BatchNorm running means and vars")
                 utils.distribute_bn(model, args.world_size,
                                     args.dist_bn == 'reduce')
+
+            if dataset_test is not None:
+                a = validate(
+                    model,
+                    loader_test,
+                    validate_loss_fn,
+                    args,
+                    amp_autocast=amp_autocast,
+                    dumpwandb=False,
+                    dumptag="IR"
+                )
 
             eval_metrics = validate(
                 model,
@@ -1016,7 +1076,8 @@ def validate(
         device=torch.device('cuda'),
         amp_autocast=suppress,
         log_suffix='',
-        dumpwandb=False
+        dumpwandb=False,
+        dumptag='val'
 ):
     batch_time_m = utils.AverageMeter()
     losses_m = utils.AverageMeter()
@@ -1085,11 +1146,10 @@ def validate(
     metrics = OrderedDict(
         [('loss', losses_m.avg), ('top1', top1_m.avg), ('top5', top5_m.avg)])
 
-    if dumpwandb:
-        write_wandb_scalar({'loss': losses_m.avg,
-                            'top1': top1_m.avg,
-                            'top5': top5_m.avg,
-                            })
+    write_wandb_scalar({f'loss_{dumptag}': losses_m.avg,
+                        f'top1_{dumptag}': top1_m.avg,
+                        f'top5_{dumptag}': top5_m.avg,
+                        }, commit=dumpwandb)
 
     return metrics
 

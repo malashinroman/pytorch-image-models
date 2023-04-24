@@ -10,6 +10,7 @@ import torch
 import os
 from dycs.models.Dycs import DycsNet
 
+
 def get_net_files(checkpoint_path):
     # FIXME: fix for arbitrary number of subdirectories
     # list all files with .npy extention in checkpoint_path, uses glob
@@ -54,7 +55,8 @@ def create_model_dycs(
     if len(network_files) < 10:
         raise ValueError('Not enough networks found in checkpoint path')
 
-    network_files=sorted(network_files, key=lambda x: int(x.split('class_map')[1][0]))
+    network_files = sorted(
+        network_files, key=lambda x: int(x.split('class_map')[1][0]))
     nets = []
 
     # load all networks with torch
@@ -64,4 +66,4 @@ def create_model_dycs(
                            exportable, no_jit, **kwargs)
         nets.append(net)
 
-    return DycsNet(nets)
+    return DycsNet(args, nets)
