@@ -24,7 +24,6 @@ class DycsNet(torch.nn.Module):
         # concatenate all outputs
         # take only ags.dycs_classes_per_group
         # first elements of output vector for each networks
-        __import__('pudb').set_trace()
         if self.args.dycs_meaning_neurons == 'first':
             ys = [y[:, :self.args.dycs_classes_per_group] for y in ys]
         elif self.args.dycs_meaning_neurons == 'inplace':

@@ -242,6 +242,9 @@ group.add_argument('--decay-rate', '--dr', type=float, default=0.1, metavar='RAT
 
 # Augmentation & regularization parameters
 group = parser.add_argument_group('Augmentation and regularization parameters')
+group.add_argument('--random_invert_p', type=float, default=0.,
+                   help='probability to randomly invert the image')
+group.add_argument('--adjust_sharpness', type=float, default=0., help='sharpness adjustment')
 group.add_argument('--no-aug', action='store_true', default=False,
                    help='Disable all training augmentation, override other train aug args')
 group.add_argument('--scale', type=float, nargs='+', default=[0.08, 1.0], metavar='PCT',
@@ -684,6 +687,7 @@ def main():
         device=device,
         use_multi_epochs_loader=args.use_multi_epochs_loader,
         worker_seeding=args.worker_seeding,
+        args=args
     )
 
     eval_workers = args.workers

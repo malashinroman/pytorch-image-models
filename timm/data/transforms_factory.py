@@ -60,6 +60,7 @@ def transforms_imagenet_train(
         re_num_splits=0,
         separate=False,
         force_color_jitter=False,
+        args=None,
 ):
     """
     If separate==True, the transforms are returned as a tuple of 3 separate transforms
@@ -113,6 +114,12 @@ def transforms_imagenet_train(
             color_jitter = (float(color_jitter),) * 3
         secondary_tfl += [transforms.ColorJitter(*color_jitter)]
 
+    ir_tfl = []
+    __import__('pudb').set_trace()
+    if args is not None and args.random_invert_p > 0.:
+        ir_tfl += [transforms.RandomInvert(p=args.random_invert_p)]
+    if args is not None and args.adjust_shapness > 0.:
+        ir_tfl += [transforms.RandomAdjustSharpness(args.adjust_shapness, p=1.)]
     final_tfl = []
     if use_prefetcher:
         # prefetcher and collate will handle tensor conversion and norm
@@ -129,9 +136,9 @@ def transforms_imagenet_train(
                 RandomErasing(re_prob, mode=re_mode, max_count=re_count, num_splits=re_num_splits, device='cpu'))
 
     if separate:
-        return transforms.Compose(primary_tfl), transforms.Compose(secondary_tfl), transforms.Compose(final_tfl)
+        return transforms.Compose(primary_tfl), transforms.Compose(secondary_tfl), transforms.Compose(ir_tfl), transforms.Compose(final_tfl)
     else:
-        return transforms.Compose(primary_tfl + secondary_tfl + final_tfl)
+        return transforms.Compose(primary_tfl + secondary_tfl + ir_tfl + final_tfl)
 
 
 def transforms_imagenet_eval(
@@ -216,7 +223,8 @@ def create_transform(
         crop_pct=None,
         crop_mode=None,
         tf_preprocessing=False,
-        separate=False):
+        separate=False,
+        args=None):
 
     if isinstance(input_size, (tuple, list)):
         img_size = input_size[-2:]
@@ -256,6 +264,7 @@ def create_transform(
                 re_count=re_count,
                 re_num_splits=re_num_splits,
                 separate=separate,
+                args=args,
             )
         else:
             assert not separate, "Separate transforms not supported for validation preprocessing"

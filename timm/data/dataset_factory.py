@@ -36,7 +36,8 @@ _TORCH_BASIC_DS = dict(
     fashion_mnist=FashionMNIST,
 )
 _TRAIN_SYNONYM = dict(train=None, training=None)
-_EVAL_SYNONYM = dict(val=None, valid=None, validation=None, eval=None, evaluation=None)
+_EVAL_SYNONYM = dict(val=None, valid=None, validation=None,
+                     eval=None, evaluation=None)
 
 
 def _search_split(root, split):
@@ -123,7 +124,8 @@ def create_dataset(
                 split = '2021_train'
             elif split in _EVAL_SYNONYM:
                 split = '2021_valid'
-            ds = INaturalist(version=split, target_type=target_type, **torch_kwargs)
+            ds = INaturalist(
+                version=split, target_type=target_type, **torch_kwargs)
         elif name == 'places365':
             assert has_places365, 'Please update to a newer PyTorch and torchvision for Places365 dataset.'
             if split in _TRAIN_SYNONYM:
@@ -151,7 +153,8 @@ def create_dataset(
     elif name.startswith('hfds/'):
         # NOTE right now, HF datasets default arrow format is a random-access Dataset,
         # There will be a IterableDataset variant too, TBD
-        ds = ImageDataset(root, reader=name, split=split, class_map=class_map, **kwargs)
+        ds = ImageDataset(root, reader=name, split=split,
+                          class_map=class_map, **kwargs)
     elif name.startswith('tfds/'):
         ds = IterableImageDataset(
             root,
@@ -182,5 +185,6 @@ def create_dataset(
         if search_split and os.path.isdir(root):
             # look for split specific sub-folder in root
             root = _search_split(root, split)
-        ds = ImageDataset(root, reader=name, class_map=class_map, load_bytes=load_bytes, **kwargs)
+        ds = ImageDataset(root, reader=name, class_map=class_map,
+                          load_bytes=load_bytes, **kwargs)
     return ds
