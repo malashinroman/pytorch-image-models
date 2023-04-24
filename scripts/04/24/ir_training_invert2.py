@@ -2,12 +2,12 @@
 train series of mobilenets on 100 subclasses of imagenet
 """
 
+import sys
+sys.path.append(".")
 from local_config import IMAGENET_PATH, IR_VIS_DATASET_PATH
 from script_manager.func.script_boilerplate import do_everything
 import os
 import random
-import sys
-sys.path.append(".")
 
 # weights and biases project name
 WANDB_PROJECT_NAME = "python-image-models"
@@ -59,7 +59,7 @@ for model in ['resnet152']:
         for adjust_sharpness in [10, 0, 5]:
             config = {
                 "model": model,
-                "random_invet_p": inv_p,
+                "random_invert_p": inv_p,
                 "adjust_sharpness": adjust_sharpness,
                 "tag": f"{base_tag}_{model}_inv_p_{inv_p}_sharp_{adjust_sharpness}",
             }

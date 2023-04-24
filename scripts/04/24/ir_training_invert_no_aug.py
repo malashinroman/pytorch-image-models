@@ -56,12 +56,12 @@ test_parameters = {
 MAIN_SCRIPT = f"torchrun --rdzv_backend=c10d --rdzv_endpoint=localhost:{random.randint(0,1000)} --nproc_per_node=1 train.py"
 for model in ['resnet18']:
     for inv_p in [0.5, 0.3, 0.7]:
-        for adjust_shapness in [10, 0, 5]:
+        for adjust_sharpness in [10, 0, 5]:
             config = {
                 "model": model,
                 "no-aug": "parameter_without_value",
-                "random_invet_p": inv_p,
-                "tag": f"{base_tag}_{model}_inv_p_{inv_p}_sharp_{adjust_shapness}",
+                "random_invert_p": inv_p,
+                "tag": f"{base_tag}_{model}_inv_p_{inv_p}_sharp_{adjust_sharpness}",
             }
             configs.append([config, None])
 
