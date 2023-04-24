@@ -40,6 +40,7 @@ default_parameters = {
     "warmup-lr": 1e-6,
     "weight-decay": 1e-5,
     "workers": 24,
+    "test-split": "test"
 }
 
 configs = []
