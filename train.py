@@ -244,7 +244,8 @@ group.add_argument('--decay-rate', '--dr', type=float, default=0.1, metavar='RAT
 group = parser.add_argument_group('Augmentation and regularization parameters')
 group.add_argument('--random_invert_p', type=float, default=0.,
                    help='probability to randomly invert the image')
-group.add_argument('--adjust_sharpness', type=float, default=0., help='sharpness adjustment')
+group.add_argument('--adjust_sharpness', type=float,
+                   default=0., help='sharpness adjustment')
 group.add_argument('--no-aug', action='store_true', default=False,
                    help='Disable all training augmentation, override other train aug args')
 group.add_argument('--scale', type=float, nargs='+', default=[0.08, 1.0], metavar='PCT',
@@ -369,6 +370,8 @@ group.add_argument('--use-multi-epochs-loader', action='store_true', default=Fal
                    help='use the multi-epochs-loader to save time at the beginning of every epoch')
 group.add_argument('--log-wandb', action='store_true', default=False,
                    help='log training and validation metrics to wandb')
+group.add_argument('--skip_validation', action='store_true', default=False,
+                   help='skip validation for debug purpose')
 
 
 def _parse_args():
@@ -816,7 +819,7 @@ def main():
             f'Scheduled epochs: {num_epochs}. LR stepped per {"epoch" if lr_scheduler.t_in_epochs else "update"}.')
 
     # validate initial model
-    if dataset_test is not None:
+    if dataset_test is not None and not args.skip_validation:
         _ = validate(
             model,
             loader_test,
@@ -826,15 +829,15 @@ def main():
             dumpwandb=False,
             dumptag='IR'
         )
-
-    eval_metrics = validate(
-        model,
-        loader_eval,
-        validate_loss_fn,
-        args,
-        amp_autocast=amp_autocast,
-        dumpwandb=True
-    )
+    if not args.skip_validation:
+        eval_metrics = validate(
+            model,
+            loader_eval,
+            validate_loss_fn,
+            args,
+            amp_autocast=amp_autocast,
+            dumpwandb=True
+        )
     try:
         for epoch in range(start_epoch, num_epochs):
             if hasattr(dataset_train, 'set_epoch'):
@@ -865,7 +868,7 @@ def main():
                 utils.distribute_bn(model, args.world_size,
                                     args.dist_bn == 'reduce')
 
-            if dataset_test is not None:
+            if dataset_test is not None and not args.skip_validation:
                 a = validate(
                     model,
                     loader_test,
@@ -876,14 +879,15 @@ def main():
                     dumptag="IR"
                 )
 
-            eval_metrics = validate(
-                model,
-                loader_eval,
-                validate_loss_fn,
-                args,
-                amp_autocast=amp_autocast,
-                dumpwandb=True
-            )
+            if not args.skip_validation:
+                eval_metrics = validate(
+                    model,
+                    loader_eval,
+                    validate_loss_fn,
+                    args,
+                    amp_autocast=amp_autocast,
+                    dumpwandb=True
+                )
 
             #     'val_loss': losses_m.avg,
             #     'val_top1': top1_m.avg,

@@ -80,6 +80,7 @@ def transforms_imagenet_train(
 
     secondary_tfl = []
     disable_color_jitter = False
+
     if auto_augment:
         assert isinstance(auto_augment, str)
         # color jitter is typically disabled if AA/RA on,
