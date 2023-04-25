@@ -57,13 +57,15 @@ test_parameters = {
 }
 
 MAIN_SCRIPT = f"torchrun --rdzv_backend=c10d --rdzv_endpoint=localhost:{random.randint(0,1000)} --nproc_per_node=1 train.py"
-for model in ['resnet50', 'resnet101']:
-    config = {
-        "model": model,
-        "tag": f"{base_tag}_{model}",
-        "no-aug": "parameter_without_value",
-    }
-    configs.append([config, None])
+for model in ['resnet18']:
+    for wd in [1e-4, 1e-3, 1e-5]:
+        config = {
+            "model": model,
+            "weight_decay": wd,
+            "tag": f"{base_tag}_{model}",
+            "no-aug": "parameter_without_value",
+        }
+        configs.append([config, None])
 
 # RUN everything
 # !normally you don't have to change anything here
