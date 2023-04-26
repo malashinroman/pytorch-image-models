@@ -7,7 +7,7 @@ import random
 import sys
 sys.path.append(".")
 from script_manager.func.script_boilerplate import do_everything
-from local_config import IR_VIS_DATASET_PATH2 as IR_VIS_DATASET_PATH
+from local_config import IR_VIS_DATASET_PATH_NEW as IR_VIS_DATASET_PATH
 
 # weights and biases project name
 WANDB_PROJECT_NAME = "python-image-models"
@@ -20,7 +20,6 @@ extra_folder_keys = []
 # used for 1000 classes
 default_parameters = {
     "__script_output_arg__": "output",
-    "model": "resnet18",
     "batch-size": 64,
     "sched": "step",
     "epochs": 200,
@@ -43,7 +42,6 @@ default_parameters = {
     "lr": 1e-5,
     "pretrained": "parameter_without_value",
     # "lr-noise": "0.42 0.9",
-    "data-dir": os.path.join(IR_VIS_DATASET_PATH, 'pytorch_models_structure'),
     "test-split": "test",
 }
 
@@ -54,18 +52,14 @@ test_parameters = {
 }
 
 MAIN_SCRIPT = f"torchrun --rdzv_backend=c10d --rdzv_endpoint=localhost:{random.randint(0,1000)} --nproc_per_node=1 train.py"
-
-for model in ['resnet18']:
-    for inv_p in [0, 0.5]:
-        for adjust_sharpness in [0, 10]:
-            config = {
-                "random_invert_p": inv_p,
-                "adjust_sharpness": adjust_sharpness,
-                "model": model,
-                "tag": f"{base_tag}_{model}_inv_p_{inv_p}_sharp_{adjust_sharpness}",
-                "no-aug": "parameter_without_value",
-            }
-            configs.append([config, None])
+for data in ['day', 'day_dawn', 'day_dawn_night', 'all']:
+    config = {
+        "data-dir": os.path.join(IR_VIS_DATASET_PATH, 'pytorch_models_structure', data),
+        "model": 'resnet18',
+        "tag": f"{base_tag}_{data}_tune",
+        "no-aug": "parameter_without_value",
+    }
+    configs.append([config, None])
 
 # RUN everything
 # !normally you don't have to change anything here

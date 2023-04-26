@@ -60,7 +60,7 @@ if __name__ == "__main__":
 
     # save text to file
     text1 =  repr(Counter([v['extra_info']['hours'] for k,v in frame_dict.items() if 'hours' in v['extra_info']]))
-    text2 = repr(Counter([v['extra_info']['hours'] for k,v in frame_dict.items() if 'hours' in v['extra_info']]))
+    text2 = repr(Counter([v['extra_info']['occluded'] for v in data_coco['annotations'] if 'occluded' in v['extra_info']]))
     text = text1 + '\n' + repr(text2)
     with open(os.path.join(args.output, "flir.txt"), "w") as f:
         f.write(text)
@@ -99,11 +99,11 @@ if __name__ == "__main__":
             print("no occluded info")
             continue
 
-        if 'hours' not in image_an['extra_info']:
+        if 'hours' not in image_an['extra_info'] and 'all' not in args.hours:
             print("no hours info")
             continue
 
-        if image_an['extra_info']['hours'] not in args.hours:
+        if 'all' not in args.hours and image_an['extra_info']['hours'] not in args.hours:
             continue
 
         max_side = max(bbox[2], bbox[3])

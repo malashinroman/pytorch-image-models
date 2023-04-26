@@ -91,6 +91,8 @@ group.add_argument('--dycs_meaning_neurons', default='first',
                    type=str, help='position of meaining neurons [first, inplace]')
 group.add_argument('--dycs_classes_per_group', default=100,
                    type=int, help='number of classes per group')
+group.add_argument('--train_set_size', default=-1,
+                     type=int, help='limit train set size')
 # Dataset parameters
 group = parser.add_argument_group('Dataset parameters')
 # Keep this argument outside the dataset group because it is positional.
@@ -608,6 +610,11 @@ def main():
         seed=args.seed,
         repeats=args.epoch_repeats,
     )
+    if args.train_set_size > 0:
+        indices_train = list(range(len(dataset_train)))
+        indices_train = indices_train[0 : args.train_set_size]
+        dataset_train = torch.utils.data.Subset(dataset_train, indices_train)
+
 
     dataset_eval = create_dataset(
         args.dataset,
