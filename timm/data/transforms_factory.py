@@ -253,6 +253,7 @@ def create_transform(
                 use_prefetcher=use_prefetcher,
                 mean=mean,
                 std=std,
+                args=args,
             )
         elif is_training:
             transform = transforms_imagenet_train(
