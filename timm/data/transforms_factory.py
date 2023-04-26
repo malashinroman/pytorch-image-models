@@ -21,6 +21,7 @@ def transforms_noaug_train(
         use_prefetcher=False,
         mean=IMAGENET_DEFAULT_MEAN,
         std=IMAGENET_DEFAULT_STD,
+        args=None,
 ):
     if interpolation == 'random':
         # random interpolation not supported with no-aug
@@ -29,6 +30,13 @@ def transforms_noaug_train(
         transforms.Resize(img_size, interpolation=str_to_interp_mode(interpolation)),
         transforms.CenterCrop(img_size)
     ]
+    ir_tfl = []
+    if args is not None and args.random_invert_p > 0.:
+        ir_tfl += [transforms.RandomInvert(p=args.random_invert_p)]
+    if args is not None and args.adjust_sharpness > 0.:
+        ir_tfl += [transforms.RandomAdjustSharpness(args.adjust_sharpness, p=1.)]
+    tfl += ir_tfl
+
     if use_prefetcher:
         # prefetcher and collate will handle tensor conversion and norm
         tfl += [ToNumpy()]
