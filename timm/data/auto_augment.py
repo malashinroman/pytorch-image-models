@@ -13,7 +13,7 @@ AugMix adapted from:
 
 Papers:
     AutoAugment: Learning Augmentation Policies from Data - https://arxiv.org/abs/1805.09501
-    Learning Data Augmentation Strategies for Object Detection - https://arxiv.org/abs/1906.11172
+    2earning Data Augmentation Strategies for Object Detection - https://arxiv.org/abs/1906.11172
     RandAugment: Practical automated data augmentation... - https://arxiv.org/abs/1909.13719
     AugMix: A Simple Data Processing Method to Improve Robustness and Uncertainty - https://arxiv.org/abs/1912.02781
     3-Augment: DeiT III: Revenge of the ViT - https://arxiv.org/abs/2204.07118

@@ -129,6 +129,7 @@ def transforms_imagenet_train(
             secondary_tfl += [auto_augment_transform(auto_augment, aa_params)]
 
     if color_jitter is not None and not disable_color_jitter:
+
         # color jitter is enabled when not using AA or when forced
         if isinstance(color_jitter, (list, tuple)):
             # color jitter should be a 3-tuple/list if spec brightness/contrast/saturation
@@ -137,9 +138,14 @@ def transforms_imagenet_train(
         else:
             # if it's a scalar, duplicate for brightness, contrast, and saturation, no hue
             color_jitter = (float(color_jitter),) * 3
+        if args.black_white_jitter:
+            color_jitter = (color_jitter[0], color_jitter[1], 0., 0.)
+
         secondary_tfl += [transforms.ColorJitter(*color_jitter)]
 
     ir_tfl = []
+    if args is not None and args.to_grayscale:
+        ir_tfl += [transforms.Grayscale(3)]
     if args is not None and args.random_invert_p > 0.:
         ir_tfl += [transforms.RandomInvert(p=args.random_invert_p)]
     if args is not None and args.adjust_sharpness > 0.:
