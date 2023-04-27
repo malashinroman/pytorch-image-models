@@ -49,14 +49,14 @@ test_parameters = {
 }
 
 MAIN_SCRIPT = f"torchrun --rdzv_backend=c10d --rdzv_endpoint=localhost:{random.randint(0,1000)} --nproc_per_node=1 train.py"
-for data in ['day_dawn', 'day', 'day_dawn_night', 'all']:
+for data in [ 'day', 'day_dawn','day_dawn_night', 'all']:
     config = {
         "data-dir": os.path.join(IR_VIS_DATASET_PATH, 'pytorch_models_structure', data),
         "model": 'resnet18',
         "train_set_size": 6565,
         # "ratio:": "1.0 1.0",
         "hflip": 0,
-        "tag": f"{base_tag}_{data}_tune",
+        "tag": f"{base_tag}_{data}",
         "disable_geometry_aug": "parameter_without_value",
     }
     configs.append([config, None])
