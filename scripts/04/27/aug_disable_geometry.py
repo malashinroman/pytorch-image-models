@@ -16,33 +16,30 @@ base_tag = os.path.split(__file__)[-1].split('.')[0]
 appendix_keys = ["tag"]
 extra_folder_keys = []
 
-# same parameters that are
-# used for 1000 classes
 default_parameters = {
     "__script_output_arg__": "output",
-    "batch-size": 64,
-    "sched": "step",
-    "epochs": 200,
-    "workers": 24,
-    'warmup-epochs': 0,
-    "decay-rate": 0.2,
-    "decay-epochs": 80,
-    "opt": "rmsproptf",
-    "opt-eps": 0.001,
-    "warmup-lr": 1e-6,
-    "weight-decay": 1e-5,
+    "model": "mobilenetv3_small_100", 
+    "aa": "rand-m9-mstd0.5",
+    "amp": "parameter_without_value",
+    "batch-size": 64, #-b 512 
+    "decay-epochs": 2.4,
+    "decay-rate": 0.973,
     "drop": 0.2,
     "drop-path": 0.2,
-    # "model-ema":  "parameter_without_value",
-    # "model-ema-decay": 0.9999,
-    "aa": "rand-m9-mstd0.5",
+    "epochs": 600,
+    "lr": 0.064,
+    "lr-noise": "0.42 0.9",
+    "model-ema":  "parameter_without_value",
+    "model-ema-decay": 0.9999,
+    "opt": "rmsproptf",
+    "opt-eps": 0.001,
     "remode": "pixel",
     "reprob": 0.2,
-    "amp": "parameter_without_value",
-    "lr": 1e-5,
-    "pretrained": "parameter_without_value",
-    # "lr-noise": "0.42 0.9",
-    "test-split": "test",
+    "sched": "step", #--sched step 
+    "warmup-lr": 1e-6,
+    "weight-decay": 1e-5,
+    "workers": 24,
+    "test-split": "test"
 }
 
 configs = []
