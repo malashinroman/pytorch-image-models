@@ -4,7 +4,7 @@ from .reader_image_folder import ReaderImageFolder
 from .reader_image_in_tar import ReaderImageInTar
 
 
-def create_reader(name, root, split='train', **kwargs):
+def create_reader(name, root, split='train', per_class_limit=-1, **kwargs):
     name = name.lower()
     name = name.split('/', 1)
     prefix = ''
@@ -31,5 +31,5 @@ def create_reader(name, root, split='train', **kwargs):
         if os.path.isfile(root) and os.path.splitext(root)[1] == '.tar':
             reader = ReaderImageInTar(root, **kwargs)
         else:
-            reader = ReaderImageFolder(root, **kwargs)
+            reader = ReaderImageFolder(root, per_class_limit=per_class_limit, **kwargs)
     return reader

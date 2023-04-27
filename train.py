@@ -602,6 +602,7 @@ def main():
     # create the train and eval datasets
     if args.data and not args.data_dir:
         args.data_dir = args.data
+
     dataset_train = create_dataset(
         args.dataset,
         root=args.data_dir,
@@ -612,11 +613,13 @@ def main():
         batch_size=args.batch_size,
         seed=args.seed,
         repeats=args.epoch_repeats,
+        per_class_limit=args.train_set_size
     )
-    if args.train_set_size > 0:
-        indices_train = list(range(len(dataset_train)))
-        indices_train = indices_train[0 : args.train_set_size]
-        dataset_train = torch.utils.data.Subset(dataset_train, indices_train)
+
+    # if args.train_set_size > 0:
+    #     indices_train = list(range(len(dataset_train)))
+    #     indices_train = indices_train[0 : args.train_set_size]
+    #     dataset_train = torch.utils.data.Subset(dataset_train, indices_train)
 
 
     dataset_eval = create_dataset(

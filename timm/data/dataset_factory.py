@@ -72,6 +72,7 @@ def create_dataset(
         batch_size=None,
         seed=42,
         repeats=0,
+        per_class_limit=-1,
         **kwargs
 ):
     """ Dataset factory method
@@ -186,5 +187,5 @@ def create_dataset(
             # look for split specific sub-folder in root
             root = _search_split(root, split)
         ds = ImageDataset(root, reader=name, class_map=class_map,
-                          load_bytes=load_bytes, **kwargs)
+                          load_bytes=load_bytes, per_class_limit=per_class_limit, **kwargs)
     return ds

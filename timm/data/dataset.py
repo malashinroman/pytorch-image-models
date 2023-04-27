@@ -30,13 +30,15 @@ class ImageDataset(data.Dataset):
             img_mode='RGB',
             transform=None,
             target_transform=None,
+            per_class_limit=-1,
     ):
         if reader is None or isinstance(reader, str):
             reader = create_reader(
                 reader or '',
                 root=root,
                 split=split,
-                class_map=class_map
+                class_map=class_map,
+                per_class_limit=per_class_limit,
             )
         self.reader = reader
         self.load_bytes = load_bytes

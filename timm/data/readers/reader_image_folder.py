@@ -13,7 +13,7 @@ from timm.utils.misc import natural_key
 from .class_map import load_class_map
 from .img_extensions import get_img_extensions
 from .reader import Reader
-
+import random
 
 def find_images_and_targets(
         folder: str,
@@ -56,12 +56,23 @@ def find_images_and_targets(
     return images_and_targets, class_to_idx
 
 
+
+def limit_samples_per_class(self, limit):
+    classes = list(self.class_to_idx.values())
+    per_class_samples = [[s for s in self.samples if s[1] == idx] for idx in classes]
+    limited_samples_per_class = [random.sample(per_class_samples[catgory_id], limit) for catgory_id in classes]
+    # flatten the list
+    limited_samples = [item for sublist in limited_samples_per_class for item in sublist]
+    # __import__('pudb').set_trace()
+    self.samples = limited_samples
+
 class ReaderImageFolder(Reader):
 
     def __init__(
             self,
             root,
-            class_map=''):
+            class_map='',
+            per_class_limit=-1):
         super().__init__()
 
         self.root = root
@@ -69,10 +80,15 @@ class ReaderImageFolder(Reader):
         if class_map:
             class_to_idx = load_class_map(class_map, root)
         self.samples, self.class_to_idx = find_images_and_targets(root, class_to_idx=class_to_idx)
+
         if len(self.samples) == 0:
             raise RuntimeError(
                 f'Found 0 images in subfolders of {root}. '
                 f'Supported image extensions are {", ".join(get_img_extensions())}')
+
+        if per_class_limit > 0:
+            pass
+            # self.limit_samples_per_class(per_class_limit)
 
     def __getitem__(self, index):
         path, target = self.samples[index]
