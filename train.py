@@ -244,6 +244,9 @@ group.add_argument('--decay-rate', '--dr', type=float, default=0.1, metavar='RAT
 
 # Augmentation & regularization parameters
 group = parser.add_argument_group('Augmentation and regularization parameters')
+group.add_argument('--disable_geometry_aug',
+                   action='store_true', default=False,
+                   help='Disable geometry augmentation (translation, scale, rotation)')
 group.add_argument('--random_invert_p', type=float, default=0.,
                    help='probability to randomly invert the image')
 group.add_argument('--adjust_sharpness', type=float,
