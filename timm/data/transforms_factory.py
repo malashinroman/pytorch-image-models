@@ -80,10 +80,18 @@ def transforms_imagenet_train(
     scale = tuple(scale or (0.08, 1.0))  # default imagenet scale range
     ratio = tuple(ratio or (3./4., 4./3.))  # default imagenet ratio range
     if args is not None and args.disable_geometry_aug:
+        scale = (1.0, 1.0)
+        ratio = (1.0, 1.0)
         primary_tfl = [
-            transforms.Resize(img_size, interpolation='bilinear'),
-            transforms.CenterCrop(img_size)
-        ]
+            RandomResizedCropAndInterpolation(img_size, scale=scale, ratio=ratio, interpolation=interpolation)]
+
+        # if interpolation == 'random':
+        #     # random interpolation not supported with no-aug
+        #     interpolation2 = 'bilinear'
+        # primary_tfl = [
+        #     transforms.Resize(img_size, interpolation=interpolation),
+        #     transforms.CenterCrop(img_size)
+        # ]
     else:
         primary_tfl = [
             RandomResizedCropAndInterpolation(img_size, scale=scale, ratio=ratio, interpolation=interpolation)]
