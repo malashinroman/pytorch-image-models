@@ -54,7 +54,7 @@ MAIN_SCRIPT = f"torchrun --rdzv_backend=c10d --rdzv_endpoint=localhost:{random.r
 for lr in [1e-1,1e-2,1e-3,1e-4]:
     config = {
         "lr": lr,
-        "decay-rate": 0.2,
+        "decay-rate": 0.1,
         "decay-epochs": 80,
         "model": 'resnet18',
         "tag": f"{base_tag}_day_tune_lr_{lr}",
