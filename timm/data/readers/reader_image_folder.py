@@ -57,16 +57,16 @@ def find_images_and_targets(
 
 
 
-def limit_samples_per_class(self, limit):
-    classes = list(self.class_to_idx.values())
-    per_class_samples = [[s for s in self.samples if s[1] == idx] for idx in classes]
-    limited_samples_per_class = [random.sample(per_class_samples[catgory_id], limit) for catgory_id in classes]
-    # flatten the list
-    limited_samples = [item for sublist in limited_samples_per_class for item in sublist]
-    # __import__('pudb').set_trace()
-    self.samples = limited_samples
 
 class ReaderImageFolder(Reader):
+
+    def limit_samples_per_class(self, limit):
+        classes = list(self.class_to_idx.values())
+        per_class_samples = [[s for s in self.samples if s[1] == idx] for idx in classes]
+        limited_samples_per_class = [random.sample(per_class_samples[catgory_id], limit) for catgory_id in classes]
+        # flatten the list
+        limited_samples = [item for sublist in limited_samples_per_class for item in sublist]
+        self.samples = limited_samples
 
     def __init__(
             self,
@@ -87,8 +87,7 @@ class ReaderImageFolder(Reader):
                 f'Supported image extensions are {", ".join(get_img_extensions())}')
 
         if per_class_limit > 0:
-            pass
-            # self.limit_samples_per_class(per_class_limit)
+            self.limit_samples_per_class(per_class_limit)
 
     def __getitem__(self, index):
         path, target = self.samples[index]

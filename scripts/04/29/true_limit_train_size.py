@@ -7,7 +7,7 @@ import random
 import sys
 sys.path.append(".")
 from script_manager.func.script_boilerplate import do_everything
-from local_config import IR_VIS_DATASET_PATH_NEW2 as IR_VIS_DATASET_PATH
+from local_config import IR_VIS_DATASET_PATH_NEW as IR_VIS_DATASET_PATH
 
 # weights and biases project name
 WANDB_PROJECT_NAME = "python-image-models"
@@ -42,7 +42,6 @@ default_parameters = {
     "disable_geometry_aug": "parameter_without_value",
     "model": 'resnet18',
     "hflip": 0,
-    "data-dir": os.path.join(IR_VIS_DATASET_PATH, 'pytorch_models_structure', 'day'),
 }
 
 configs = []
@@ -52,19 +51,15 @@ test_parameters = {
 }
 
 MAIN_SCRIPT = f"torchrun --rdzv_backend=c10d --rdzv_endpoint=localhost:{random.randint(0,1000)} --nproc_per_node=1 train.py"
-for train_set_size in [100, 1000]:
+for train_set_size in [100,1000,2000,500,4000]:
+    for hours in ['day', 'all']:
         config = {
             "train_set_size": train_set_size,
-            "tag": f"{base_tag}_day_train_set_size_{train_set_size}_aug",
+            "data-dir": os.path.join(IR_VIS_DATASET_PATH, 'pytorch_models_structure', hours),
+            "tag": f"{base_tag}_{hours}_train_set_size_{train_set_size}",
         }
         configs.append([config, None])
 
-for train_set_size in [100, 1000]:
-        config = {
-            "random_invet_p": 0.5,
-            "tag": f"{base_tag}_day_train_set_size_{train_set_size}_random_inv",
-        }
-        configs.append([config, None])
 
 # RUN everything
 # !normally you don't have to change anything here
