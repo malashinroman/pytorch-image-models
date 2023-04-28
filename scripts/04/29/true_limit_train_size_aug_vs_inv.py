@@ -18,7 +18,6 @@ extra_folder_keys = []
 
 default_parameters = {
     "__script_output_arg__": "output",
-    "aa": "rand-m9-mstd0.5",
     "amp": "parameter_without_value",
     "batch-size": 64, #-b 512 
     "decay-epochs": 2.4,
@@ -54,6 +53,7 @@ test_parameters = {
 MAIN_SCRIPT = f"torchrun --rdzv_backend=c10d --rdzv_endpoint=localhost:{random.randint(0,1000)} --nproc_per_node=1 train.py"
 for train_set_size in [100, 1000]:
         config = {
+            "aa": "rand-m9-mstd0.5",
             "train_set_size": train_set_size,
             "tag": f"{base_tag}_day_train_set_size_{train_set_size}_aug",
         }
@@ -62,7 +62,7 @@ for train_set_size in [100, 1000]:
 for train_set_size in [100, 1000]:
         config = {
             "random_invet_p": 0.5,
-            "tag": f"{base_tag}_day_train_set_size_{train_set_size}_random_inv",
+            "tag": f"{base_tag}_day_train_set_size_{train_set_size}_random_inv_color_jit_no_aa",
         }
         configs.append([config, None])
 
