@@ -52,9 +52,9 @@ test_parameters = {
 MAIN_SCRIPT = f"torchrun --rdzv_backend=c10d --rdzv_endpoint=localhost:{random.randint(0,1000)} --nproc_per_node=1 train.py"
 
 # for lr in [1e-1,1e-2,1e-3,1e-4]:
-for batch_size in [4,8,2]:
+for batch_size in [64]:
     config = {
-        "aa": "rand-m9-mstd0.5-p0.2",
+        "aa": "pigeon",
         "lr": 1e-1,
         "decay-rate": 0.1,
         "decay-epochs": 80,
