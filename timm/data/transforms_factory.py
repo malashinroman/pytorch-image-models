@@ -149,7 +149,7 @@ def transforms_imagenet_train(
     if args is not None and args.random_invert_p > 0.:
         ir_tfl += [transforms.RandomInvert(p=args.random_invert_p)]
     if args is not None and args.adjust_sharpness > 0.:
-        ir_tfl += [transforms.RandomAdjustSharpness(args.adjust_sharpness, p=1.)]
+        ir_tfl += [transforms.RandomAdjustSharpness(args.adjust_sharpness, p=.5)]
     final_tfl = []
     if use_prefetcher:
         # prefetcher and collate will handle tensor conversion and norm
