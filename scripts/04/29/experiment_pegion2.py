@@ -51,17 +51,16 @@ test_parameters = {
 
 MAIN_SCRIPT = f"torchrun --rdzv_backend=c10d --rdzv_endpoint=localhost:{random.randint(0,1000)} --nproc_per_node=1 train.py"
 
-# for lr in [1e-1,1e-2,1e-3,1e-4]:
-for batch_size in [4,8,2]:
-    config = {
-        "lr": 1e-1,
-        "batch-size":batch_size,
-        "decay-rate": 0.1,
-        "decay-epochs": 80,
-        "model": 'resnet18',
-        "tag": f"{base_tag}_day_tune_{batch_size}",
-    }
-    configs.append([config, None])
+config = {
+    "lr": 1e-1,
+    "batch_size":16,
+    "aa": "rand-m9-mstd0.5-p0.3",
+    "decay-rate": 0.1,
+    "decay-epochs": 80,
+    "model": 'resnet18',
+    "tag": f"{base_tag}_day_tune",
+}
+configs.append([config, None])
 
 # RUN everything
 # !normally you don't have to change anything here
