@@ -16,31 +16,31 @@ base_tag = os.path.split(__file__)[-1].split('.')[0]
 appendix_keys = ["tag"]
 extra_folder_keys = []
 
-# same parameters that are
-# used for 1000 classes
 default_parameters = {
     "__script_output_arg__": "output",
-    "sched": "step",
-    "epochs": 200,
-    "workers": 24,
-    'warmup-epochs': 0,
-    "opt": "sgd",
-    "warmup-lr": 1e-6,
-    "weight-decay": 1e-5,
+    # "aa": "rand-m9-mstd0.5",
+    "amp": "parameter_without_value",
+    "batch-size": 64, #-b 512 
+    "decay-epochs": 2.4,
+    "decay-rate": 0.973,
     "drop": 0.2,
     "drop-path": 0.2,
-    # "model-ema":  "parameter_without_value",
-    # "model-ema-decay": 0.9999,
-    # "aa": "rand-m9-mstd0.5",
-    "remode": "pixel",
-    "reprob": 0.2,
-    "amp": "parameter_without_value",
-    "pretrained": "parameter_without_value",
+    "epochs": 600,
+    "lr": 0.064,
+    "lr-noise": "0.42 0.9",
+    "model-ema":  "parameter_without_value",
+    "model-ema-decay": 0.9999,
+    "opt": "rmsproptf",
+    "opt-eps": 0.001,
+    "sched": "step", #--sched step 
+    "warmup-lr": 1e-6,
+    "weight-decay": 1e-5,
+    "workers": 24,
     "test-split": "test",
+    "disable_geometry_aug": "parameter_without_value",
+    "model": 'resnet18',
     "data-dir": os.path.join(IR_VIS_DATASET_PATH, 'pytorch_models_structure', 'day'),
     "hflip": 0,
-    "disable_geometry_aug": "parameter_without_value",
-    "color-jitter": 0,
 }
 
 configs = []
@@ -51,21 +51,21 @@ test_parameters = {
 
 MAIN_SCRIPT = f"torchrun --rdzv_backend=c10d --rdzv_endpoint=localhost:{random.randint(0,1000)} --nproc_per_node=1 train.py"
 
-
-config = {
-    "lr": 1e-1,
-    "batch-size": 16,
-    "decay-rate": 0.1,
-    "decay-epochs": 80,
-    "model": "efficientnet_b6",
-    "random_invert_p": 0.5,
-    "adjust_sharpness": 10,
-    "color-jitter": 0.4,
-    "aa": "rand-m9-mstd0.5",
-    "to_grayscale": "parameter_without_value",
-    "tag": f"{base_tag}_aa_inv_prob_0.5_rand_sharpness_color_jitter_grayscale_resnet50",
-}
-configs.append([config, None])
+'''
+mode: pixel color mode, one of 'const', 'rand', or 'pixel'
+    'const' - erase block is constant color of 0 for all channels
+    'rand'  - erase block is same per-channel random (normal) color
+    'pixel' - erase block is per-pixel random (normal) color
+'''
+for reprob in [0.2, 0.4]:
+    for remode in ['const', 'pixel', 'rand']:
+        config = {
+            "remode": remode,
+            "reprob": reprob,
+            "color-jitter": 0,
+            "tag": f"{base_tag}_reprob_{reprob}_remode_{remode}",
+        }
+        configs.append([config, None])
 
 # RUN everything
 # !normally you don't have to change anything here
