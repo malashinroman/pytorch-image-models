@@ -54,7 +54,7 @@ MAIN_SCRIPT = f"torchrun --rdzv_backend=c10d --rdzv_endpoint=localhost:{random.r
 
 config = {
     "lr": 1e-1,
-    "batch-size": 64,
+    "batch-size": 32,
     "decay-rate": 0.1,
     "decay-epochs": 80,
     "model": "efficientnet_b6",
