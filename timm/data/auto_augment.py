@@ -530,6 +530,38 @@ def auto_augment_policy_pigeon(hparams):
     pc = [[AugmentOp(*a, hparams=hparams) for a in sp] for sp in policy]
     return pc
 
+def auto_augment_policy_penguin(hparams):
+    # ImageNet policy from https://arxiv.org/abs/1805.09501
+    policy = [
+        [('Invert', 0.5, 7), ('PosterizeOriginal', 0.4, 8), ('Rotate', 0.6, 9), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('Solarize', 0.6, 5), ('AutoContrast', 0.6, 5), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('Equalize', 0.8, 8), ('Equalize', 0.6, 3), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('PosterizeOriginal', 0.6, 7), ('PosterizeOriginal', 0.6, 6), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('Equalize', 0.4, 7), ('Solarize', 0.2, 4), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('Equalize', 0.4, 4), ('Rotate', 0.8, 8), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('Solarize', 0.6, 3), ('Equalize', 0.6, 7), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('PosterizeOriginal', 0.8, 5), ('Equalize', 1.0, 2), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('Rotate', 0.2, 3), ('Solarize', 0.6, 8), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('Equalize', 0.6, 8), ('PosterizeOriginal', 0.4, 6), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('Rotate', 0.8, 8), ('Color', 0.4, 0), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('Rotate', 0.4, 9), ('Equalize', 0.6, 2), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('Equalize', 0.0, 7), ('Equalize', 0.8, 8), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('Invert', 0.6, 4), ('Equalize', 1.0, 8), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('Color', 0.6, 4), ('Contrast', 1.0, 8), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('Rotate', 0.8, 8), ('Color', 1.0, 2), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('Color', 0.8, 8), ('Solarize', 0.8, 7), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('Sharpness', 0.4, 7), ('Invert', 0.6, 8), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('ShearX', 0.6, 5), ('Equalize', 1.0, 9), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('Color', 0.4, 0), ('Equalize', 0.6, 3), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('Equalize', 0.4, 7), ('Solarize', 0.2, 4), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('Solarize', 0.6, 5), ('AutoContrast', 0.6, 5), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('Invert', 0.6, 4), ('Equalize', 1.0, 8), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('Color', 0.6, 4), ('Contrast', 1.0, 8), ('Sharpness', 0.4, 9)],
+        [('Invert', 0.5, 7), ('Equalize', 0.8, 8), ('Equalize', 0.6, 3), ('Sharpness', 0.4, 9)],
+    ]
+    pc = [[AugmentOp(*a, hparams=hparams) for a in sp] for sp in policy]
+    return pc
+
 def auto_augment_policy_originalr(hparams):
     # ImageNet policy from https://arxiv.org/abs/1805.09501 with research posterize variation
     policy = [
@@ -587,6 +619,8 @@ def auto_augment_policy(name='v0', hparams=None):
         return auto_augment_policy_3a(hparams)
     if name == 'pigeon':
         return auto_augment_policy_pigeon(hparams)
+    if name == 'penguin':
+        return auto_augment_policy_penguin(hparams)
     assert False, f'Unknown AA policy {name}'
 
 
