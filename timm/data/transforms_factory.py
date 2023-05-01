@@ -97,6 +97,10 @@ def transforms_imagenet_train(
             RandomResizedCropAndInterpolation(img_size, scale=scale, ratio=ratio, interpolation=interpolation)]
 
 
+    if args is not None and args.force_color_jitter and not force_color_jitter:
+        __import__('pudb').set_trace()
+        force_color_jitter = True
+
     if hflip > 0.:
         primary_tfl += [transforms.RandomHorizontalFlip(p=hflip)]
     if vflip > 0.:

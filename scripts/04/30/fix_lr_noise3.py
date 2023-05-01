@@ -54,23 +54,23 @@ test_parameters = {
 MAIN_SCRIPT = f"torchrun --rdzv_backend=c10d --rdzv_endpoint=localhost:{random.randint(0,1000)} --nproc_per_node=1 train.py"
 
 
-for color_jitter in [0.4]:
-    config = {
-        "adjust_sharpness": 10,
-        "color-jitter": color_jitter,
-        "force-color-jitter": "parameter_without_value",
-        "random_invert_p": 0.5,
-        "tag": f"{base_tag}_day_color_jitter_{color_jitter}_random_invert_p_0.5",
-    }
-    configs.append([config, None])
+# for color_jitter in [0.4]:
+#     config = {
+#         "adjust_sharpness": 10,
+#         "color-jitter": color_jitter,
+#         "force-color-jitter": "parameter_without_value",
+#         "random_invert_p": 0.5,
+#     }
+#     configs.append([config, None])
 
 for color_jitter in [0.4]:
     config = {
         "aa": "rand-m9-mstd0.5",
+        "adjust_sharpness": 10,
         "color-jitter": color_jitter,
         "force-color-jitter": "parameter_without_value",
         "random_invert_p": 0.5,
-        "tag": f"{base_tag}_day_random_invert_p_0.5_aa_",
+        "tag": f"{base_tag}_day_FORCE_color_jitter_{color_jitter}_aa_random_invert_p_0.5_sharp",
     }
     configs.append([config, None])
 
