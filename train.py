@@ -249,6 +249,7 @@ group.add_argument('--disable_geometry_aug',
                    help='Disable geometry augmentation (translation, scale, rotation)')
 group.add_argument('--black-white-jitter', action='store_true', default=False, help='supress color jitter')
 group.add_argument('--to_grayscale', action='store_true', default=False, help='convert to gray scale in the end')
+group.add_argument('--force_color_jitter', action='store_true', default=False, help='convert to gray scale in the end')
 group.add_argument('--random_invert_p', type=float, default=0.,
                    help='probability to randomly invert the image')
 group.add_argument('--adjust_sharpness', type=float,

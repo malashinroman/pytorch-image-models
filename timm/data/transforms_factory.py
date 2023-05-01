@@ -98,7 +98,6 @@ def transforms_imagenet_train(
 
 
     if args is not None and args.force_color_jitter and not force_color_jitter:
-        __import__('pudb').set_trace()
         force_color_jitter = True
 
     if hflip > 0.:
