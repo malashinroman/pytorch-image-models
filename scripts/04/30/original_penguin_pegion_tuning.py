@@ -29,6 +29,10 @@ default_parameters = {
     "weight-decay": 1e-5,
     "drop": 0.2,
     "drop-path": 0.2,
+    "batch-size": 64,
+    "decay-rate": 0.1,
+    "decay-epochs": 80,
+    "lr": 1e-1,
     # "model-ema":  "parameter_without_value",
     # "model-ema-decay": 0.9999,
     # "aa": "rand-m9-mstd0.5",
@@ -54,7 +58,7 @@ MAIN_SCRIPT = f"torchrun --rdzv_backend=c10d --rdzv_endpoint=localhost:{random.r
 
 for aa in ['original', 'penguin', 'pigeon']:
     config = {
-        "aa": "original_",
+        "aa": aa,
         "tag": f"{base_tag}_aa_{aa}",
     }
     configs.append([config, None])
