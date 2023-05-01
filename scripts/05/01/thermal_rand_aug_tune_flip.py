@@ -43,7 +43,7 @@ default_parameters = {
     "pretrained": "parameter_without_value",
     "test-split": "test",
     "data-dir": os.path.join(IR_VIS_DATASET_PATH, 'pytorch_models_structure', 'day'),
-    # "hflip": 0.5,
+    "hflip": 0.5,
     "disable_geometry_aug": "parameter_without_value",
     "color-jitter": 0,
 }
