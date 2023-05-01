@@ -42,7 +42,7 @@ default_parameters = {
     "disable_geometry_aug": "parameter_without_value",
     "model": 'resnet18',
     "data-dir": os.path.join(IR_VIS_DATASET_PATH, 'pytorch_models_structure', 'day'),
-    "hflip": 0,
+    "hflip": 0.5,
 }
 
 configs = []
