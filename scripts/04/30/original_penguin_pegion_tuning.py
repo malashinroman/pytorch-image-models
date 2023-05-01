@@ -54,7 +54,7 @@ MAIN_SCRIPT = f"torchrun --rdzv_backend=c10d --rdzv_endpoint=localhost:{random.r
 
 for aa in ['original', 'penguin', 'pigeon']:
     config = {
-        "aa": "original_",
+        "aa": aa,
         "tag": f"{base_tag}_aa_{aa}",
     }
     configs.append([config, None])
