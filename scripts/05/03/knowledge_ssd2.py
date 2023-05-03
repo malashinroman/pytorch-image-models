@@ -58,23 +58,23 @@ i=3
 for lr in [1e-3, 1e-5]:
     config = {
         "lr": lr,
-        "tag": f"{base_tag}_class_map{i}",
-        "class-map": f"class_maps/class_maps_five_in_place/class_map{i}_lr_{lr}.txt"
+        "tag": f"{base_tag}_class_map{i}_lr_{lr}.txt",
+        "class-map": f"class_maps/class_maps_five_in_place/class_map{i}.txt"
     }
     configs.append([config, None])
 
 config = {
     "lr": 1e-4,
     'warmup-epochs': 5,
-    "tag": f"{base_tag}_class_map{i}",
-    "class-map": f"class_maps/class_maps_five_in_place/class_map{i}_lr_{lr}_warm_5.txt"
+    "tag": f"{base_tag}_class_map{i}_lr_{lr}_warm_5",
+    "class-map": f"class_maps/class_maps_five_in_place/class_map{i}.txt"
 }
 
 config = {
     "lr": 1e-4,
     "batch-size": 64,
-    "tag": f"{base_tag}_class_map{i}",
-    "class-map": f"class_maps/class_maps_five_in_place/class_map{i}_lr_{lr}_batch_size_64.txt"
+    "tag": f"{base_tag}_class_map{i}_lr_{lr}_batch_size_64",
+    "class-map": f"class_maps/class_maps_five_in_place/class_map{i}.txt"
 }
 # RUN everything
 # !normally you don't have to change anything here
