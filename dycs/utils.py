@@ -66,4 +66,9 @@ def create_model_dycs(
                            exportable, no_jit, **kwargs)
         nets.append(net)
 
-    return DycsNet(args, nets)
+    masternet = create_model(timm_model_name, True, pretrained_cfg,
+                       pretrained_cfg_overlay, file, scriptable,
+                       exportable, no_jit, **kwargs)
+
+
+    return DycsNet(args, nets, master_net=masternet)
