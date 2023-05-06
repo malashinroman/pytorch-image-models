@@ -69,6 +69,7 @@ config = {
     "tag": f"{base_tag}_class_map{i}_lr_{lr}_warm_5",
     "class-map": f"class_maps/class_maps_five_in_place/class_map{i}.txt"
 }
+configs.append([config, None])
 
 config = {
     "lr": 1e-4,
@@ -76,6 +77,7 @@ config = {
     "tag": f"{base_tag}_class_map{i}_lr_{lr}_batch_size_64",
     "class-map": f"class_maps/class_maps_five_in_place/class_map{i}.txt"
 }
+configs.append([config, None])
 # RUN everything
 # !normally you don't have to change anything here
 if __name__ == "__main__":
