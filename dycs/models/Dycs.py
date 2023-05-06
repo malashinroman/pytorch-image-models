@@ -15,6 +15,7 @@ class DycsNet(torch.nn.Module):
         self.master_net = master_net
 
     def forward(self, x):
+        __import__('pudb').set_trace()
         if self.args.dycs_regime == 'concatenate':
             # forward pass through all networks
             ys = []
@@ -37,7 +38,7 @@ class DycsNet(torch.nn.Module):
             ym = self.master_net(x)
             index = ym.argmax()
             net_index = (index / self.args.dycs_classes_per_group).int()
-            y = self.nets[i](x)
+            y = self.nets[index](x)
         else:
             raise Exception('unknown dycs_regime')
         return y
