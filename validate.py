@@ -63,6 +63,8 @@ parser.add_argument('--dycs_meaning_neurons', default='first',
                    type=str, help='position of meaining neurons [first, inplace]')
 parser.add_argument('--dycs_classes_per_group', default=100,
                     type=int, help='number of classes per group')
+parser.add_argument('--dycs_regime', default='concatenate',
+                   type=str, help='regime of Dycs: one of [concatenate, masternet]')
 parser.add_argument('data', nargs='?', metavar='DIR', const=None,
                     help='path to dataset (*deprecated*, use --data-dir)')
 parser.add_argument('--data-dir', metavar='DIR',
