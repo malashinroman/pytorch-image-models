@@ -4,10 +4,10 @@ train series of mobilenets on 100 subclasses of imagenet
 
 import sys
 sys.path.append(".")
-from local_config import IMAGENET_PATH
-from script_manager.func.script_boilerplate import do_everything
-import os
 import random
+import os
+from script_manager.func.script_boilerplate import do_everything
+from local_config import IMAGENET_PATH
 
 # weights and biases project name
 WANDB_PROJECT_NAME = "python-image-models"
@@ -35,7 +35,7 @@ default_parameters = {
     "sched": "step",
     "epochs": 200,
     "workers": 24,
-    'warmup-epochs': 0,
+    'warmup-epochs': 5,
     "decay-rate": 0.2,
     "decay-epochs": 80,
     "opt": "rmsproptf",
@@ -56,7 +56,7 @@ default_parameters = {
     "data-dir": os.path.join(IMAGENET_PATH, 'pytorch_models_structure'),
     "dycs_classes_per_group": 200,
     "dycs_meaning_neurons": 'inplace',
-    "checkpoint": 'checkpoints/5_networks_small_new/'
+    "initial-checkpoint": 'checkpoints/5_networks_small_new/'
 }
 configs = []
 
