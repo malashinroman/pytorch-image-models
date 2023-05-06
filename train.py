@@ -90,6 +90,8 @@ group = parser.add_argument_group('Dycs parameters')
 # dycs parameters
 group.add_argument('--dycs_meaning_neurons', default='first',
                    type=str, help='position of meaining neurons [first, inplace]')
+group.add_argument('--dycs_regime', default='concatenate',
+                   type=str, help='regime of Dycs: one of [concatenate, masternet]')
 group.add_argument('--dycs_classes_per_group', default=100,
                    type=int, help='number of classes per group')
 group.add_argument('--train_set_size', default=-1,
