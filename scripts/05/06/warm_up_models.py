@@ -54,13 +54,20 @@ test_parameters = {
 
 MAIN_SCRIPT = f"torchrun --rdzv_backend=c10d --rdzv_endpoint=localhost:{random.randint(0,1000)} --nproc_per_node=1 train.py"
 
-for model in ['resnet50', 'mobilenetv3_large_100', 'mobilenetv3_small_75', 'resnet18',  'resnet101']:
+for model in ['resnet50', 'mobilenetv3_large_100', 'mobilenetv3_small_075', 'resnet18',  'resnet101']:
     for i  in range(5):
+        batch_size = 512
+        if model == 'resnet50':
+            batch_size = 256
+        elif model == 'resnet101':
+            batch_size = 128
+
         config = {
+            "batch-size": batch_size,
             'warmup-epochs': 5,
             "model": model,
             "class-map": f"class_maps/class_maps_five_in_place/class_map{i}.txt",
-            "tag": f"{base_tag}_class_map_{i}_warm_5",
+            "tag": f"{base_tag}_class_map_{i}_model_{model}",
         }
         configs.append([config, None])
 
