@@ -20,10 +20,11 @@ extra_folder_keys = []
 default_parameters = {
     "model": "dycs_mobilenetv3_small_100",
     "batch-size": 512,
+    "dycs_classes_per_group": 200,
     "dycs_meaning_neurons": 'inplace',
     "workers": 24,
     "data-dir": os.path.join(IMAGENET_PATH, 'pytorch_models_structure', 'validation'),
-    "checkpoint": 'checkpoints/5_networks_small/'
+    "checkpoint": 'checkpoints/5_networks_small_new/'
 }
 
 configs = []

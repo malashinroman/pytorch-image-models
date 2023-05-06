@@ -52,7 +52,7 @@ def create_model_dycs(
     network_files = get_net_files(checkpoint_path)
     if len(network_files) == 0:
         raise ValueError('No networks found in checkpoint path')
-    if len(network_files) < 10:
+    if len(network_files) not in [5,10]:
         raise ValueError('Not enough networks found in checkpoint path')
 
     network_files = sorted(

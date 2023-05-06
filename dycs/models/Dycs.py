@@ -15,6 +15,7 @@ class DycsNet(torch.nn.Module):
 
     def forward(self, x):
         # forward pass through all networks
+        __import__('pudb').set_trace()
         ys = []
         # x = x.to('cuda:0')
         for net in self.nets:
@@ -27,7 +28,7 @@ class DycsNet(torch.nn.Module):
         if self.args.dycs_meaning_neurons == 'first':
             ys = [y[:, :self.args.dycs_classes_per_group] for y in ys]
         elif self.args.dycs_meaning_neurons == 'inplace':
-            ys = [y[i][:, i*self.args.dycs_classes_per_group:(
+            ys = [ys[i][:, i*self.args.dycs_classes_per_group:(
                 i+1)*self.args.dycs_classes_per_group] for i in range(len(ys))]
         y = torch.cat(ys, dim=1)
         return y
