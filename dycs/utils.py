@@ -9,7 +9,7 @@ from timm.models._factory import create_model
 import torch
 import os
 from dycs.models.Dycs import DycsNet
-
+from timm.utils.model import freeze, unfreeze
 
 def get_net_files(checkpoint_path):
     # FIXME: fix for arbitrary number of subdirectories
@@ -35,10 +35,19 @@ def create_model_dycs(
         # if checkpoint_path is directory than do not use it
         if checkpoint_path.endswith('/'):
             checkpoint_path = ''
-        return create_model(model_name, pretrained,
+        model = create_model(model_name, pretrained,
                             pretrained_cfg, pretrained_cfg_overlay,
                             checkpoint_path, scriptable, exportable,
                             no_jit, **kwargs)
+
+        __import__('pudb').set_trace()
+        if args.dycs_freeze_layers is not None:
+            freeze(model, args.dycs_freeze_layers)
+
+        if args.dycs_unfreeze_layers is not None:
+            unfreeze(model, args.dycs_unfreeze_layers)
+
+        return model
 
     name_parts = model_name.split('dycs_')
     if len(name_parts) == 2:
