@@ -16,13 +16,13 @@ class DycsNet(torch.nn.Module):
 
     def forward(self, x):
         __import__('pudb').set_trace()
-        if self.args.dycs_regime == 'concatenate':
-            # forward pass through all networks
-            ys = []
-            for net in self.nets:
-                y = net(x)
-                ys.append(y)
+        # forward pass through all networks
+        ys = []
+        for net in self.nets:
+            y = net(x)
+            ys.append(y)
 
+        if self.args.dycs_regime == 'concatenate':
             # concatenate all outputs
             # take only ags.dycs_classes_per_group
             # first elements of output vector for each networks
@@ -34,11 +34,18 @@ class DycsNet(torch.nn.Module):
             y = torch.cat(ys, dim=1)
 
         elif self.args.dycs_regime == 'masternet':
-            #use prediction of masternet to choose subnet
+            # use prediction of masternet to choose subnet
             ym = self.master_net(x)
-            index = ym.argmax()
+            index = ym.argmax(dim=1)
             net_index = (index / self.args.dycs_classes_per_group).int()
-            y = self.nets[index](x)
+            # y = self.nets[net_index](x)
+            ys_n = []
+            for i, net_ind in enumerate(net_index):
+                ys_n.append(ys[net_ind][i])
+
+            y = torch.stack(ys_n)
+            # y = ym
+
         else:
             raise Exception('unknown dycs_regime')
         return y
