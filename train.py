@@ -14,7 +14,7 @@ NVIDIA CUDA specific speedups adopted from NVIDIA Apex examples
 
 Hacked together by / Copyright 2020 Ross Wightman (https://github.com/rwightman)
 """
-from timm.loss.cross_entropy_dycs import LabelSmoothingCrossEntropyRaw
+from timm.loss.cross_entropy_dycs import LabelSmoothingCrossEntropyRaw, convert2raw_classification
 from timm.utils import ApexScaler, NativeScaler
 from timm.scheduler import create_scheduler_v2, scheduler_kwargs
 from timm.optim import create_optimizer_v2, optimizer_kwargs
@@ -43,7 +43,6 @@ import time
 import sys
 
 # from script_manager.func.wandb_logger import
-
 try:
     from apex import amp
     from apex.parallel import DistributedDataParallel as ApexDDP
@@ -89,6 +88,7 @@ parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
 group = parser.add_argument_group('Dycs parameters')
 
 # dycs parameters
+
 group.add_argument('--dycs_meaning_neurons', default='first',
                    type=str, help='position of meaining neurons [first, inplace]')
 group.add_argument('--dycs_regime', default='concatenate',
@@ -98,7 +98,7 @@ group.add_argument('--dycs_classes_per_group', default=100,
 group.add_argument('--dycs_fine2raw', default=None,
                    type=str, help='how to convert from fine to raw labels')
 group.add_argument('--train_set_size', default=-1,
-                     type=int, help='limit train set size')
+                   type=int, help='limit train set size')
 # Dataset parameters
 group = parser.add_argument_group('Dataset parameters')
 # Keep this argument outside the dataset group because it is positional.
@@ -253,9 +253,12 @@ group = parser.add_argument_group('Augmentation and regularization parameters')
 group.add_argument('--disable_geometry_aug',
                    action='store_true', default=False,
                    help='Disable geometry augmentation (translation, scale, rotation)')
-group.add_argument('--black-white-jitter', action='store_true', default=False, help='supress color jitter')
-group.add_argument('--to_grayscale', action='store_true', default=False, help='convert to gray scale in the end')
-group.add_argument('--force_color_jitter', action='store_true', default=False, help='convert to gray scale in the end')
+group.add_argument('--black-white-jitter', action='store_true',
+                   default=False, help='supress color jitter')
+group.add_argument('--to_grayscale', action='store_true',
+                   default=False, help='convert to gray scale in the end')
+group.add_argument('--force_color_jitter', action='store_true',
+                   default=False, help='convert to gray scale in the end')
 group.add_argument('--random_invert_p', type=float, default=0.,
                    help='probability to randomly invert the image')
 group.add_argument('--adjust_sharpness', type=float,
@@ -629,7 +632,6 @@ def main():
     #     indices_train = list(range(len(dataset_train)))
     #     indices_train = indices_train[0 : args.train_set_size]
     #     dataset_train = torch.utils.data.Subset(dataset_train, indices_train)
-
 
     dataset_eval = create_dataset(
         args.dataset,
@@ -1119,6 +1121,8 @@ def validate(
     top1_m = utils.AverageMeter()
     top5_m = utils.AverageMeter()
 
+    top1_m_raw = utils.AverageMeter()
+    top5_m_raw = utils.AverageMeter()
     model.eval()
 
     end = time.time()
@@ -1146,11 +1150,17 @@ def validate(
 
                 loss = loss_fn(output, target)
             acc1, acc5 = utils.accuracy(output, target, topk=(1, 5))
+            output_raw, target_raw = convert2raw_classification(
+                output, target, args)
+            acc1_raw, acc5_raw = utils.accuracy(
+                output_raw, target_raw, topk=(1, 5))
 
             if args.distributed:
                 reduced_loss = utils.reduce_tensor(loss.data, args.world_size)
                 acc1 = utils.reduce_tensor(acc1, args.world_size)
                 acc5 = utils.reduce_tensor(acc5, args.world_size)
+                acc1_raw = utils.reduce_tensor(acc1_raw, args.world_size)
+                acc5_raw = utils.reduce_tensor(acc5_raw, args.world_size)
             else:
                 reduced_loss = loss.data
 
@@ -1160,6 +1170,9 @@ def validate(
             losses_m.update(reduced_loss.item(), input.size(0))
             top1_m.update(acc1.item(), output.size(0))
             top5_m.update(acc5.item(), output.size(0))
+
+            top1_m_raw.update(acc1_raw.item(), output_raw.size(0))
+            top5_m_raw.update(acc5_raw.item(), output_raw.size(0))
 
             batch_time_m.update(time.time() - end)
             end = time.time()
@@ -1184,6 +1197,8 @@ def validate(
     write_wandb_scalar({f'loss_{dumptag}': losses_m.avg,
                         f'top1_{dumptag}': top1_m.avg,
                         f'top5_{dumptag}': top5_m.avg,
+                        f'top1_raw_{dumptag}': top1_m_raw.avg,
+                        f'top5_raw_{dumptag}': top5_m_raw.avg,
                         }, commit=dumpwandb)
 
     return metrics
