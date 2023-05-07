@@ -14,6 +14,7 @@ NVIDIA CUDA specific speedups adopted from NVIDIA Apex examples
 
 Hacked together by / Copyright 2020 Ross Wightman (https://github.com/rwightman)
 """
+from timm.loss.cross_entropy_dycs import LabelSmoothingCrossEntropyRaw
 from timm.utils import ApexScaler, NativeScaler
 from timm.scheduler import create_scheduler_v2, scheduler_kwargs
 from timm.optim import create_optimizer_v2, optimizer_kwargs
@@ -94,7 +95,7 @@ group.add_argument('--dycs_regime', default='concatenate',
                    type=str, help='regime of Dycs: one of [concatenate, masternet]')
 group.add_argument('--dycs_classes_per_group', default=100,
                    type=int, help='number of classes per group')
-group.add_argument('--dycs_fine2raw', default='max',
+group.add_argument('--dycs_fine2raw', default=None,
                    type=str, help='how to convert from fine to raw labels')
 group.add_argument('--train_set_size', default=-1,
                      type=int, help='limit train set size')
@@ -767,8 +768,12 @@ def main():
             train_loss_fn = BinaryCrossEntropy(
                 smoothing=args.smoothing, target_threshold=args.bce_target_thresh)
         else:
-            train_loss_fn = LabelSmoothingCrossEntropy(
-                smoothing=args.smoothing)
+            if args.dycs_fine2raw is not None:
+                train_loss_fn = LabelSmoothingCrossEntropyRaw(smoothing=args.smoothing,
+                                                              args=args)
+            else:
+                train_loss_fn = LabelSmoothingCrossEntropy(
+                    smoothing=args.smoothing)
     else:
         train_loss_fn = nn.CrossEntropyLoss()
 
