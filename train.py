@@ -14,6 +14,7 @@ NVIDIA CUDA specific speedups adopted from NVIDIA Apex examples
 
 Hacked together by / Copyright 2020 Ross Wightman (https://github.com/rwightman)
 """
+from create_flir_dataset import str2list
 from timm.loss.cross_entropy_dycs import LabelSmoothingCrossEntropyRaw, convert2raw_classification
 from timm.utils import ApexScaler, NativeScaler
 from timm.scheduler import create_scheduler_v2, scheduler_kwargs
@@ -97,6 +98,10 @@ group.add_argument('--dycs_classes_per_group', default=100,
                    type=int, help='number of classes per group')
 group.add_argument('--dycs_fine2raw', default=None,
                    type=str, help='how to convert from fine to raw labels')
+group.add_argument('--dycs_freeze_layers', default=None,
+                   type=str2list, help='list of layers to freeze, if [], then freeze all')
+group.add_argument('--dycs_unfreeze_layers', default=None,
+                   type=str2list, help='list of layers to unfreeze')
 group.add_argument('--train_set_size', default=-1,
                    type=int, help='limit train set size')
 # Dataset parameters
