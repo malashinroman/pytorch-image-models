@@ -13,7 +13,6 @@ from yaml import warnings
 def convert2raw_classification(x: torch.Tensor, target: torch.Tensor, args: Namespace):
     """Convert classification into raw classification for dycs
     """
-    # __import__('pudb').set_trace()
     new_x = torch.zeros(size=(x.shape[0], 5), dtype=x.dtype).to(x.device)
     group_size = args.dycs_classes_per_group
     new_target = (target / group_size).long()

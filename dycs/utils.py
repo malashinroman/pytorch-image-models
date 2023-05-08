@@ -40,7 +40,6 @@ def create_model_dycs(
                             checkpoint_path, scriptable, exportable,
                             no_jit, **kwargs)
 
-        __import__('pudb').set_trace()
         if args.dycs_freeze_layers is not None:
             freeze(model, args.dycs_freeze_layers)
 
