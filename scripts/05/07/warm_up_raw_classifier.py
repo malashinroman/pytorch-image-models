@@ -62,6 +62,7 @@ for dycs_fine2raw in ['max', 'sum', 'mean']:
     "batch-size": batch_size,
     'warmup-epochs': 5,
     'dycs_fine2raw': dycs_fine2raw,
+    'dycs_classes_per_group': 200,
     "model": model,
     "tag": f"{base_tag}_model_{model}_fine2raw_{dycs_fine2raw}",
     }

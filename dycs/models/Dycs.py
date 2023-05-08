@@ -15,7 +15,6 @@ class DycsNet(torch.nn.Module):
         self.master_net = master_net
 
     def forward(self, x):
-        __import__('pudb').set_trace()
         # forward pass through all networks
         ys = []
         for net in self.nets:
