@@ -68,7 +68,7 @@ for warmup_lr, warmup_epochs in [(1e-7, 15), (1e-6, 15)]:
 
 config = {
     "batch-size": 512,
-    'warmup-epochs': 1e-6,
+    'warmup-epochs': 5,
     "warmup-lr": 1e-5,
     "model": 'mobilenetv3_small_100',
     "class-map": f"class_maps/class_maps_five_in_place/class_map{i}.txt",
