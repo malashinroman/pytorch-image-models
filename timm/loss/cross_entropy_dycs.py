@@ -13,9 +13,9 @@ from yaml import warnings
 def convert2raw_classification(x: torch.Tensor, target: torch.Tensor, args: Namespace):
     """Convert classification into raw classification for dycs
     """
-    new_x = torch.zeros(size=(x.shape[0], 5), dtype=x.type())
+    new_x = torch.zeros(size=(x.shape[0], 5), dtype=x.dtype).to(x.device)
     group_size = args.dycs_classes_per_group
-    new_target = (target / group_size).int()
+    new_target = (target / group_size).long()
     """
     0-199:   0
     200-399: 1
@@ -27,7 +27,7 @@ def convert2raw_classification(x: torch.Tensor, target: torch.Tensor, args: Name
 
     if args.dycs_fine2raw == 'max':
         for i in range(n_superclasses):
-            new_x[:,i] = x[:,i*group_size:(i+1)*group_size].max(dim=1)
+            new_x[:,i] = x[:,i*group_size:(i+1)*group_size].max(dim=1)[0]
     elif args.dycs_fine2raw == 'sum':
         for i in range(n_superclasses):
             new_x[:,i] = x[:,i*group_size:(i+1)*group_size].sum(dim=1)

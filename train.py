@@ -778,7 +778,6 @@ def main():
             train_loss_fn = BinaryCrossEntropy(
                 smoothing=args.smoothing, target_threshold=args.bce_target_thresh)
         else:
-            __import__('pudb').set_trace()
             if args.dycs_fine2raw is not None:
                 train_loss_fn = LabelSmoothingCrossEntropyRaw(smoothing=args.smoothing,
                                                               args=args)
