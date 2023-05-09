@@ -18,13 +18,10 @@ extra_folder_keys = []
 # same parameters that are
 # used for 1000 classes
 default_parameters = {
-    "model": "mobilenetv3_small_100",
-    "pretrained": True,
     "batch-size": 512,
     "dycs_classes_per_group": 200,
-    "dycs_meaning_neurons": 'inplace',
-    "dycs_supress_not_mapped_classes": "paramter_without_value",
-    "workers": 24,
+    "model": "dycs_mobilenetv3_small_100",
+    "pretrained": "parameter_without_value",
     "data-dir": os.path.join(IMAGENET_PATH, 'pytorch_models_structure', 'validation'),
 }
 
@@ -37,7 +34,7 @@ test_parameters = {
 MAIN_SCRIPT = "validate.py"
 for i in range(0, 5):
     config = {
-        "tag": f"{base_tag}_class_map{i}",
+        "tag": f"{base_tag}_class_map{i}_",
         "class-map": f"class_maps/class_maps_five_in_place/class_map{i}.txt"
     }
     configs.append([config, None])
