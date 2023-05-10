@@ -102,6 +102,9 @@ group.add_argument('--dycs_freeze_layers', default=None,
                    type=str2list, help='list of layers to freeze, if [], then freeze all')
 group.add_argument('--dycs_unfreeze_layers', default=None,
                    type=str2list, help='list of layers to unfreeze')
+parser.add_argument('--dycs_supress_not_mapped_classes', action='store_true', default=False,
+                    help='save confusion matrix')
+
 group.add_argument('--train_set_size', default=-1,
                    type=int, help='limit train set size')
 # Dataset parameters
@@ -1020,6 +1023,14 @@ def train_one_epoch(
             output = model(input)
             loss = loss_fn(output, target)
 
+            if args.dycs_supress_not_mapped_classes:
+                """
+                supress output of everything that goes beyond class-map
+                """
+                for class_ind in range(total_cl_n):
+                    if class_ind not in label2wordnet:
+                        output[:,class_ind] = -10000
+
         if not args.distributed:
             losses_m.update(loss.item(), input.size(0))
 
@@ -1152,6 +1163,13 @@ def validate(
                         0, reduce_factor, reduce_factor).mean(dim=2)
                     target = target[0:target.size(0):reduce_factor]
 
+                if args.dycs_supress_not_mapped_classes:
+                    """
+                    supress output of everything that goes beyond class-map
+                    """
+                    for class_ind in range(total_cl_n):
+                        if class_ind not in label2wordnet:
+                            output[:,class_ind] = -10000
                 loss = loss_fn(output, target)
             acc1, acc5 = utils.accuracy(output, target, topk=(1, 5))
             output_raw, target_raw = convert2raw_classification(

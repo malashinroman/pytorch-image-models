@@ -25,6 +25,10 @@ def convert2raw_classification(x: torch.Tensor, target: torch.Tensor, args: Name
     """
     n_superclasses = 1000 // group_size
 
+    # return input to reduce code adapation
+    if args.dycs_fine2raw is None:
+        return x,target
+
     if args.dycs_fine2raw == 'max':
         for i in range(n_superclasses):
             new_x[:,i] = x[:,i*group_size:(i+1)*group_size].max(dim=1)[0]

@@ -7,6 +7,7 @@ canonical PyTorch, standard Python style, and good performance. Repurpose as you
 
 Hacked together by Ross Wightman (https://github.com/rwightman)
 """
+from get_clusters_from_confusion_matrix import get_class_map_dict
 from script_manager.func.add_needed_args import smart_parse_args
 import argparse
 import csv
@@ -59,12 +60,19 @@ _logger = logging.getLogger('validate')
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Validation')
 # dycs parameters
-parser.add_argument('--dycs_meaning_neurons', default='first', 
-                   type=str, help='position of meaining neurons [first, inplace]')
+parser.add_argument('--dycs_meaning_neurons', default='first',
+                    type=str, help='position of meaining neurons [first, inplace]')
 parser.add_argument('--dycs_classes_per_group', default=100,
                     type=int, help='number of classes per group')
 parser.add_argument('--dycs_regime', default='concatenate',
-                   type=str, help='regime of Dycs: one of [concatenate, masternet]')
+                    type=str, help='regime of Dycs: one of [concatenate, masternet]')
+parser.add_argument('--dycs_save_confusion_matrix', default=0,
+                    type=str, help='regime of Dycs: one of [concatenate, masternet]')
+parser.add_argument('--dycs_save_confusion_matrix', action='store_true', default=False,
+                    help='save confusion matrix')
+parser.add_argument('--dycs_supress_not_mapped_classes', action='store_true', default=False,
+                    help='save confusion matrix')
+
 parser.add_argument('data', nargs='?', metavar='DIR', const=None,
                     help='path to dataset (*deprecated*, use --data-dir)')
 parser.add_argument('--data-dir', metavar='DIR',
@@ -209,16 +217,6 @@ def validate(args):
     elif args.input_size is not None:
         in_chans = args.input_size[0]
 
-    # model = create_model(
-    #     args.model,
-    #     pretrained=args.pretrained,
-    #     num_classes=args.num_classes,
-    #     in_chans=in_chans,
-    #     global_pool=args.gp,
-    #     scriptable=args.torchscript,
-    #     **args.model_kwargs,
-    # )
-
     model = create_model_dycs(
         args,
         args.model,
@@ -321,6 +319,9 @@ def validate(args):
     top5 = AverageMeter()
 
     model.eval()
+    true_labels = []
+    predictions = []
+    label2wordnet,total_cl_n = get_class_map_dict(args.class_map)
     with torch.no_grad():
         # warmup, reduce variability of first batch time, especially for comparing torchscript vs non
         input = torch.randn((args.batch_size,) +
@@ -344,6 +345,15 @@ def validate(args):
 
                 if valid_labels is not None:
                     output = output[:, valid_labels]
+
+                if args.dycs_supress_not_mapped_classes:
+                    """
+                    supress output of everything that goes beyond class-map
+                    """
+                    for class_ind in range(total_cl_n):
+                        if class_ind not in label2wordnet:
+                            output[:,class_ind] = -10000
+
                 loss = criterion(
                     output, target)  # pylint: disable=not-callable
 
@@ -351,6 +361,11 @@ def validate(args):
                 real_labels.add_result(output)
 
             # measure accuracy and record loss
+            # FIXME: there should be convertion 2 list probably
+            true_labels.append([x for x in target.cpu().detach().npy()])
+            predicted_for_batch = output.max()[1]
+            predictions.append(predicted_for_batch.npy())
+
             acc1, acc5 = accuracy(output.detach(), target, topk=(1, 5))
             losses.update(loss.item(), input.size(0))
             top1.update(acc1.item(), input.size(0))
@@ -508,6 +523,85 @@ def write_results(results_file, results, format='csv'):
             for r in results:
                 dw.writerow(r)
             cf.flush()
+
+def main():
+    setup_default_logging()
+    args = parser.parse_args()
+    model_cfgs = []
+    model_names = []
+    if os.path.isdir(args.checkpoint):
+        # validate all checkpoints in a path with same model
+        checkpoints = glob.glob(args.checkpoint + '/*.pth.tar')
+        checkpoints += glob.glob(args.checkpoint + '/*.pth')
+        model_names = list_models(args.model)
+        model_cfgs = [(args.model, c) for c in sorted(checkpoints, key=natural_key)]
+    else:
+        if args.model == 'all':
+            # validate all models in a list of names with pretrained checkpoints
+            args.pretrained = True
+            model_names = list_models(
+                pretrained=True,
+                exclude_filters=_NON_IN1K_FILTERS,
+            )
+            model_cfgs = [(n, '') for n in model_names]
+        elif not is_model(args.model):
+            # model name doesn't exist, try as wildcard filter
+            model_names = list_models(
+                args.model,
+                pretrained=True,
+            )
+            model_cfgs = [(n, '') for n in model_names]
+
+        if not model_cfgs and os.path.isfile(args.model):
+            with open(args.model) as f:
+                model_names = [line.rstrip() for line in f]
+            model_cfgs = [(n, None) for n in model_names if n]
+
+    if len(model_cfgs):
+        _logger.info('Running bulk validation on these pretrained models: {}'.format(', '.join(model_names)))
+        results = []
+        try:
+            initial_batch_size = args.batch_size
+            for m, c in model_cfgs:
+                args.model = m
+                args.checkpoint = c
+                r = _try_run(args, initial_batch_size)
+                if 'error' in r:
+                    continue
+                if args.checkpoint:
+                    r['checkpoint'] = args.checkpoint
+                results.append(r)
+        except KeyboardInterrupt as e:
+            pass
+        results = sorted(results, key=lambda x: x['top1'], reverse=True)
+    else:
+        if args.retry:
+            results = _try_run(args, args.batch_size)
+        else:
+            results = validate(args)
+
+    if args.results_file:
+        write_results(args.results_file, results, format=args.results_format)
+
+    # output results in JSON to stdout w/ delimiter for runner script
+    print(f'--result\n{json.dumps(results, indent=4)}')
+
+
+def write_results(results_file, results, format='csv'):
+    with open(results_file, mode='w') as cf:
+        if format == 'json':
+            json.dump(results, cf, indent=4)
+        else:
+            if not isinstance(results, (list, tuple)):
+                results = [results]
+            if not results:
+                return
+            dw = csv.DictWriter(cf, fieldnames=results[0].keys())
+            dw.writeheader()
+            for r in results:
+                dw.writerow(r)
+            cf.flush()
+
 
 
 if __name__ == '__main__':
