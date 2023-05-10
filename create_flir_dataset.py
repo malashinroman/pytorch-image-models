@@ -7,9 +7,9 @@ import argparse
 from local_config import FLIR_DATASET_PATH
 from script_manager.func.add_needed_args import smart_parse_args
 from collections import Counter
-
-def str2list(v):
-    return [str(x.strip()) for x in v.strip()[1:-1].split(',')]
+from dycs.utils import str2list
+# def str2list(v):
+#     return [str(x.strip()) for x in v.strip()[1:-1].split(',')]
 
 
 parser = argparse.ArgumentParser(description='Arpgparse')

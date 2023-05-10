@@ -14,7 +14,7 @@ NVIDIA CUDA specific speedups adopted from NVIDIA Apex examples
 
 Hacked together by / Copyright 2020 Ross Wightman (https://github.com/rwightman)
 """
-from create_flir_dataset import str2list
+from dycs.utils import str2list
 from timm.loss.cross_entropy_dycs import LabelSmoothingCrossEntropyRaw, convert2raw_classification
 from timm.utils import ApexScaler, NativeScaler
 from timm.scheduler import create_scheduler_v2, scheduler_kwargs

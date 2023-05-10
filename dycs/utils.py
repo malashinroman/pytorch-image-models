@@ -11,6 +11,9 @@ import os
 from dycs.models.Dycs import DycsNet
 from timm.utils.model import freeze, unfreeze
 
+def str2list(v):
+    return [str(x.strip()) for x in v.strip()[1:-1].split(',')]
+
 def get_net_files(checkpoint_path):
     # FIXME: fix for arbitrary number of subdirectories
     # list all files with .npy extention in checkpoint_path, uses glob
